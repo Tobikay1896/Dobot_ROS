@@ -1,0 +1,61 @@
+{
+    "nodes": [
+        {
+            "display_name": "BA_Start",
+            "node_id": "BA_Start",
+            "prim_path": "/World/Robot/Base_Joint",
+            "attribute": "drive:angular:physics:targetPosition",
+            "target_value": 90.0
+        },
+        {
+            "display_name": "BM_MoveFront_Set",
+            "node_id": "BM_MoveFront_Set",
+            "prim_path": "/World/Production_Line/Mazemagazin/Mazemagazin_Prismatic",
+            "attribute": "drive:linear:physics:targetPosition",
+            "target_value": 0.08
+        },
+        {
+            "display_name": "DS_StartStepper_Set",
+            "node_id": "Start_Stepper_Set",
+            "prim_path": "/World/Production_Line/Drehscheibe/RevoluteJoint",
+            "attribute": "drive:angular:physics:targetPosition",
+            "target_value": 1.0
+        },
+        {
+            "display_name": "DM_MoveFront_Set",
+            "node_id": "DM_MoveFront_Set",
+            "prim_path": "/World/Production_Line/Deckelmagazin/Deckelmagazin_Prismatic",
+            "attribute": "drive:linear:physics:targetPosition",
+            "target_value": 0.08
+        },
+        {
+            "display_name": "KM_Stepper_Start",
+            "node_id": "KM_Stepper_Start",
+            "prim_path": "/World/Production_Line/Kugelmagazin/RevoluteJoint",
+            "attribute": "drive:angular:physics:targetPosition",
+            "target_value": 180
+        },
+        {
+            "display_name": "Squeezer_start_set",
+            "node_id": "Squeezer_start_set",
+            "prim_path": "/World/Production_Line/Presse/PrismaticJoint",
+            "attribute": "drive:linear:physics:targetPosition",
+            "target_value": -0.035
+        }
+        ,
+        {
+            "display_name": "Schwenkarm_Deckel_rot",
+            "node_id": "Schwenkarm_Deckel_rot",
+            "prim_path": "/World/Production_Line/Schwenkarm_Deckel/RevoluteJoint_rotatory",
+            "attribute": "drive:angular:physics:targetPosition",
+            "target_value": 180
+        },
+        {
+            "display_name": "Schwenkarm_Deckel_trans",
+            "node_id": "Schwenkarm_Deckel_trans",
+            "prim_path": "/World/Production_Line/Schwenkarm_Deckel/PrismaticJoint_translatory",
+            "attribute": "drive:linear:physics:targetPosition",
+            "target_value": -0.015
+        }
+    ]
+}
