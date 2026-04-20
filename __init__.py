@@ -1,1 +1,1 @@
-from .extension import MyExtension
+from .extension2 import MyExtension

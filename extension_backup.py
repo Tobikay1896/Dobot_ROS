@@ -7,6 +7,7 @@ import os
 import json
 import asyncio
 import aiohttp
+from pxr import Sdf
 from datetime import datetime
 
 
@@ -66,15 +67,15 @@ class MyExtension(omni.ext.IExt):
         self._velocity_running = {}
         self._timeline_sub = None
 
-        self._sim_mode = True
-        self._poll_task = None
-
         self._build_ui()
         self.load_nodes_from_json()
         self._subscribe_timeline()
 
-        self._log("Extension gestartet", "info")
-        self._log("SIM-Modus aktiv", "info")
+        main_task = asyncio.ensure_future(self.auto_update_loop())
+        self._active_tasks.append(main_task)
+        self._log("Extension gestartet, Polling aktiv", "info")
+
+    
 
     # =================================================================
     # UI
@@ -86,7 +87,7 @@ class MyExtension(omni.ext.IExt):
         with self._window.frame:
             with ui.VStack(spacing=0):
 
-                # HEADER
+                # --- HEADER ---
                 with ui.ZStack(height=50):
                     ui.Rectangle(style={"background_color": CLR_BG_DARK})
                     with ui.HStack():
@@ -96,69 +97,34 @@ class MyExtension(omni.ext.IExt):
                             ui.Label("MAZE RUNNER", style={"font_size": 17, "color": CLR_TEXT}, height=22)
                             ui.Label("Web-API Control Center", style={"font_size": 11, "color": CLR_TEXT_DIM}, height=14)
                         ui.Spacer()
-                        with ui.VStack(width=180, spacing=1):
+                        with ui.VStack(width=160, spacing=1):
                             ui.Spacer(height=10)
-                            self._status_label = ui.Label(
-                                "SIM-Modus aktiv",
-                                style={"font_size": 11, "color": CLR_GREEN},
-                                height=16,
-                                alignment=ui.Alignment.RIGHT
-                            )
-                            self._poll_label = ui.Label(
-                                "Polls: 0",
-                                style={"font_size": 10, "color": CLR_TEXT_FAINT},
-                                height=14,
-                                alignment=ui.Alignment.RIGHT
-                            )
+                            self._status_label = ui.Label("Verbinde...", style={"font_size": 11, "color": CLR_TEXT_DIM}, height=16, alignment=ui.Alignment.RIGHT)
+                            self._poll_label = ui.Label("Polls: 0", style={"font_size": 10, "color": CLR_TEXT_FAINT}, height=14, alignment=ui.Alignment.RIGHT)
                         ui.Spacer(width=14)
 
                 ui.Line(style={"color": CLR_BORDER}, height=1)
 
-                # TOOLBAR
+                # --- TOOLBAR ---
                 with ui.ZStack(height=34):
                     ui.Rectangle(style={"background_color": CLR_BG_MID})
                     with ui.HStack(spacing=6):
                         ui.Spacer(width=10)
-
                         btn_ref = ui.Button("Refresh JSON", width=120, height=24)
-                        btn_ref.set_style({
-                            "background_color": 0xFF1A2E48,
-                            "border_radius": 3,
-                            "font_size": 11,
-                            "color": CLR_TEXT
-                        })
+                        btn_ref.set_style({"background_color": 0xFF1A2E48, "border_radius": 3, "font_size": 11, "color": CLR_TEXT})
                         btn_ref.set_clicked_fn(self.load_nodes_from_json)
 
                         btn_rst = ui.Button("Restart Extension", width=130, height=24)
-                        btn_rst.set_style({
-                            "background_color": 0xFF2A1520,
-                            "border_radius": 3,
-                            "font_size": 11,
-                            "color": CLR_RED
-                        })
+                        btn_rst.set_style({"background_color": 0xFF2A1520, "border_radius": 3, "font_size": 11, "color": CLR_RED})
                         btn_rst.set_clicked_fn(self._restart_extension)
 
-                        self._sim_btn = ui.Button("→ LIVE", width=90, height=24)
-                        self._sim_btn.set_style({
-                            "background_color": 0xFF0D2A0D,
-                            "border_radius": 3,
-                            "font_size": 11,
-                            "color": CLR_GREEN
-                        })
-                        self._sim_btn.set_clicked_fn(self._toggle_sim_mode)
-
                         ui.Spacer()
-                        self._node_count_label = ui.Label(
-                            "",
-                            style={"font_size": 10, "color": CLR_TEXT_FAINT},
-                            width=70,
-                            alignment=ui.Alignment.RIGHT
-                        )
+                        self._node_count_label = ui.Label("", style={"font_size": 10, "color": CLR_TEXT_FAINT}, width=70, alignment=ui.Alignment.RIGHT)
                         ui.Spacer(width=14)
 
                 ui.Line(style={"color": CLR_BORDER}, height=1)
 
-                # COLUMN HEADERS
+                # --- COLUMN HEADERS ---
                 with ui.ZStack(height=22):
                     ui.Rectangle(style={"background_color": CLR_BG_HEADER})
                     with ui.HStack():
@@ -172,13 +138,13 @@ class MyExtension(omni.ext.IExt):
 
                 ui.Line(style={"color": CLR_BORDER}, height=1)
 
-                # NODE LIST
+                # --- NODE LIST ---
                 with ui.ScrollingFrame(style={"background_color": CLR_BG_MID}):
                     self._list_container = ui.VStack(spacing=0)
 
                 ui.Line(style={"color": CLR_BORDER}, height=1)
 
-                # LOG HEADER
+                # --- LOG HEADER ---
                 with ui.ZStack(height=22):
                     ui.Rectangle(style={"background_color": CLR_BG_DARK})
                     with ui.HStack():
@@ -186,16 +152,11 @@ class MyExtension(omni.ext.IExt):
                         ui.Label("Log", style={"font_size": 10, "color": CLR_TEXT_FAINT}, width=40)
                         ui.Spacer()
                         btn_clr = ui.Button("Clear", width=48, height=16)
-                        btn_clr.set_style({
-                            "background_color": 0xFF152030,
-                            "border_radius": 2,
-                            "font_size": 9,
-                            "color": CLR_TEXT_FAINT
-                        })
+                        btn_clr.set_style({"background_color": 0xFF152030, "border_radius": 2, "font_size": 9, "color": CLR_TEXT_FAINT})
                         btn_clr.set_clicked_fn(self._clear_log)
                         ui.Spacer(width=14)
 
-                # LOG PANEL
+                # --- LOG PANEL ---
                 with ui.ScrollingFrame(height=110, style={"background_color": 0xFF080C14}):
                     self._log_container = ui.VStack(spacing=0)
 
@@ -223,58 +184,6 @@ class MyExtension(omni.ext.IExt):
     def _clear_log(self):
         self._log_lines = []
         self._rebuild_log()
-
-    # =================================================================
-    # TIMELINE
-    # =================================================================
-    def _subscribe_timeline(self):
-        timeline = omni.timeline.get_timeline_interface()
-        self._timeline_sub = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._on_timeline_event
-        )
-
-    def _on_timeline_event(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.PLAY):
-            self._reset_all_to_zero()
-        elif event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._on_sim_stop()
-
-    def _on_sim_stop(self):
-        self._log("Simulation gestoppt", "info")
-
-    def _reset_all_to_zero(self):
-        self._log("Simulation gestartet - setze alle Werte auf 0", "info")
-
-        stage = omni.usd.get_context().get_stage()
-        if not stage:
-            return
-
-        for node_id in self._impulse_positions:
-            self._impulse_positions[node_id] = 0.0
-        for node_id in self._impulse_armed:
-            self._impulse_armed[node_id] = True
-        for node_id in self._velocity_running:
-            self._velocity_running[node_id] = False
-
-        for node in self.nodes:
-            node_id = node.get("node_id", "")
-            mode = node.get("mode", "toggle")
-
-            self._set_usd_attr(stage, node, 0.0)
-            self.node_values[node_id] = False
-
-            if node_id in self.node_labels:
-                if mode == "impulse":
-                    self.node_labels[node_id].text = "  0 deg"
-                    self.node_labels[node_id].set_style({"font_size": 12, "color": CLR_TEXT_DIM})
-                elif mode == "velocity_impulse":
-                    self.node_labels[node_id].text = "  READY"
-                    self.node_labels[node_id].set_style({"font_size": 12, "color": CLR_TEXT_DIM})
-                else:
-                    self.node_labels[node_id].text = "  FALSE"
-                    self.node_labels[node_id].set_style({"font_size": 12, "color": CLR_RED})
-
-        self._log("Alle Werte auf 0 gesetzt", "ok")
 
     # =================================================================
     # JSON
@@ -340,41 +249,6 @@ class MyExtension(omni.ext.IExt):
                         ui.Spacer(width=14)
 
     # =================================================================
-    # MODE
-    # =================================================================
-    def _toggle_sim_mode(self):
-        self._sim_mode = not self._sim_mode
-
-        if self._sim_mode:
-            if self._poll_task and not self._poll_task.done():
-                self._poll_task.cancel()
-            self._poll_task = None
-
-            self._sim_btn.text = "→ LIVE"
-            self._sim_btn.set_style({
-                "background_color": 0xFF0D2A0D,
-                "border_radius": 3,
-                "font_size": 11,
-                "color": CLR_GREEN,
-            })
-            self._set_status_text("SIM-Modus aktiv", CLR_GREEN)
-            self._log("→ SIM-Modus | Kein API-Polling", "ok")
-
-        else:
-            self._poll_task = asyncio.ensure_future(self.auto_update_loop())
-            self._active_tasks.append(self._poll_task)
-
-            self._sim_btn.text = "→ SIM"
-            self._sim_btn.set_style({
-                "background_color": 0xFF2A0D0D,
-                "border_radius": 3,
-                "font_size": 11,
-                "color": CLR_RED,
-            })
-            self._set_status_text("LIVE aktiv", CLR_RED)
-            self._log("→ LIVE-Modus | API-Polling gestartet", "info")
-
-    # =================================================================
     # RESTART
     # =================================================================
     def _restart_extension(self):
@@ -399,9 +273,8 @@ class MyExtension(omni.ext.IExt):
         if mode == "impulse":
             self._log(f"Manueller Step-Impuls: {node_id}", "info")
             self._execute_step_impulse(node_id, node)
-            if not self._sim_mode:
-                t = asyncio.ensure_future(self._send_impulse_to_api(node_id))
-                self._active_tasks.append(t)
+            t = asyncio.ensure_future(self._send_impulse_to_api(node_id))
+            self._active_tasks.append(t)
 
         elif mode == "velocity_impulse":
             if self._velocity_running.get(node_id, False):
@@ -410,26 +283,18 @@ class MyExtension(omni.ext.IExt):
             self._log(f"Manueller Velocity-Impuls: {node_id}", "info")
             t = asyncio.ensure_future(self._execute_velocity_impulse(node_id, node))
             self._active_tasks.append(t)
-            if not self._sim_mode:
-                t2 = asyncio.ensure_future(self._send_impulse_to_api(node_id))
-                self._active_tasks.append(t2)
+            t2 = asyncio.ensure_future(self._send_impulse_to_api(node_id))
+            self._active_tasks.append(t2)
 
         else:
             current_val = self.node_values.get(node_id, False)
             new_val = not current_val
             self._log(f"Toggle {node_id} -> {new_val}", "info")
-
-            if self._sim_mode:
-                self.node_values[node_id] = new_val
-                self._set_node_display(node_id, new_val)
-                self._apply_usd_for_node(node_id, new_val)
-                self._log(f"SIM: {node_id} = {new_val}", "ok")
-            else:
-                if node_id in self.node_labels:
-                    self.node_labels[node_id].text = "  sending..."
-                    self.node_labels[node_id].set_style({"font_size": 12, "color": CLR_YELLOW})
-                t = asyncio.ensure_future(self.send_api_update(node_id, new_val))
-                self._active_tasks.append(t)
+            if node_id in self.node_labels:
+                self.node_labels[node_id].text = "  sending..."
+                self.node_labels[node_id].set_style({"font_size": 12, "color": CLR_YELLOW})
+            t = asyncio.ensure_future(self.send_api_update(node_id, new_val))
+            self._active_tasks.append(t)
 
         self._active_tasks = [t for t in self._active_tasks if not t.done()]
 
@@ -475,7 +340,7 @@ class MyExtension(omni.ext.IExt):
             return
 
         if node_id in self.node_labels:
-            self.node_labels[node_id].text = "  SPINNING"
+            self.node_labels[node_id].text = f"  SPINNING"
             self.node_labels[node_id].set_style({"font_size": 12, "color": CLR_ORANGE})
 
         self._log(f"Velocity START: {node_id} vel={velocity} dur={duration}s", "ok")
@@ -501,9 +366,6 @@ class MyExtension(omni.ext.IExt):
     # API: Impulse
     # =================================================================
     async def _send_impulse_to_api(self, node_id):
-        if self._sim_mode:
-            return
-
         headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
         try:
             async with aiohttp.ClientSession() as session:
@@ -527,12 +389,6 @@ class MyExtension(omni.ext.IExt):
     # API: Toggle SET
     # =================================================================
     async def send_api_update(self, node_id, value):
-        if self._sim_mode:
-            self.node_values[node_id] = value
-            self._set_node_display(node_id, value)
-            self._apply_usd_for_node(node_id, value)
-            return
-
         headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
         params = {"NodeName": node_id, "Value": str(value).lower(), "user": "admin", "apiKey": self.api_key}
         try:
@@ -554,14 +410,11 @@ class MyExtension(omni.ext.IExt):
     # POLLING
     # =================================================================
     async def auto_update_loop(self):
-        if self._sim_mode:
-            return
-
         session = None
         try:
             session = aiohttp.ClientSession()
-            self._set_status_text("Verbunden", CLR_GREEN)
-            while self._is_running and not self._sim_mode:
+            self._set_status(True)
+            while self._is_running:
                 try:
                     await self._poll_all_nodes(session)
                     self._poll_count += 1
@@ -570,9 +423,9 @@ class MyExtension(omni.ext.IExt):
                     await asyncio.sleep(0.1)
                 except asyncio.CancelledError:
                     raise
-                except aiohttp.ClientError:
-                    self._set_status_text("Getrennt", CLR_RED)
-                    if self._is_running and not self._sim_mode:
+                except aiohttp.ClientError as e:
+                    self._set_status(False)
+                    if self._is_running:
                         self._log("HTTP Fehler, Retry 2s", "error")
                         await asyncio.sleep(2)
                 except Exception as e:
@@ -585,15 +438,16 @@ class MyExtension(omni.ext.IExt):
             if session and not session.closed:
                 await session.close()
                 await asyncio.sleep(0.05)
+            self._set_status(False)
 
     async def _poll_all_nodes(self, session):
-        if not self._is_running or self._sim_mode:
+        if not self._is_running:
             return
 
         headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
 
         for node in self.nodes:
-            if not self._is_running or self._sim_mode:
+            if not self._is_running:
                 break
 
             node_id = node.get("node_id")
@@ -680,11 +534,15 @@ class MyExtension(omni.ext.IExt):
             label.text = "  FALSE"
             label.set_style({"font_size": 12, "color": CLR_RED})
 
-    def _set_status_text(self, text, color):
+    def _set_status(self, connected):
         if not hasattr(self, "_status_label"):
             return
-        self._status_label.text = text
-        self._status_label.set_style({"font_size": 11, "color": color})
+        if connected:
+            self._status_label.text = "Verbunden"
+            self._status_label.set_style({"font_size": 11, "color": CLR_GREEN})
+        else:
+            self._status_label.text = "Getrennt"
+            self._status_label.set_style({"font_size": 11, "color": CLR_RED})
 
     # =================================================================
     # USD
@@ -741,9 +599,6 @@ class MyExtension(omni.ext.IExt):
         if self._timeline_sub:
             self._timeline_sub = None
 
-        if self._poll_task and not self._poll_task.done():
-            self._poll_task.cancel()
-
         tasks_to_cancel = [t for t in self._active_tasks if not t.done()]
         self._active_tasks = []
         self.node_labels = {}
@@ -753,7 +608,7 @@ class MyExtension(omni.ext.IExt):
         self._impulse_armed = {}
         self._velocity_running = {}
 
-        if hasattr(self, "_window") and self._window:
+        if self._window:
             self._window.destroy()
             self._window = None
 

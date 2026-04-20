@@ -5,7 +5,7 @@
             "node_id": "BA_Start",
             "prim_path": "/World/Production_Line/Schwenkarm_Deckel/RevoluteJoint_rotatory",
             "attribute": "drive:angular:physics:targetPosition",
-            "target_value": 90.0,
+            "target_value": 0.0,
             "mode": "toggle"
         },
         {
@@ -13,7 +13,7 @@
             "node_id": "BM_MoveFront_Set",
             "prim_path": "/World/Production_Line/Mazemagazin/Mazemagazin_Prismatic",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": 0.08,
+            "target_value": 0.085,
             "mode": "toggle"
         },
         {
@@ -23,24 +23,24 @@
             "attribute": "drive:angular:physics:targetPosition",
             "target_value": 0.0,
             "mode": "impulse",
-            "step_degrees": -60.0
+            "step_degrees": -20.0
         },
         {
             "display_name": "DM_MoveFront_Set",
             "node_id": "DM_MoveFront_Set",
             "prim_path": "/World/Production_Line/Deckelmagazin/Deckelmagazin_Prismatic",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": 0.08,
+            "target_value": 0.07,
             "mode": "toggle"
         },
         {
             "display_name": "KM_Stepper_Start",
             "node_id": "KM_Stepper_Start",
             "prim_path": "/World/Production_Line/Kugelmagazin/RevoluteJoint",
-            "attribute": "drive:angular:physics:targetVelocity",
-            "target_value": 1500.0,
-            "mode": "velocity_impulse",
-            "impulse_duration": 1.0
+            "attribute": "drive:angular:physics:targetPosition",
+            "target_value": 0.0,
+            "mode": "impulse",
+            "step_degrees": -93.0
         },
         {
             "display_name": "Squeezer_start_set",
@@ -53,9 +53,9 @@
         {
             "display_name": "Schwenkarm_Deckel_rot",
             "node_id": "Schwenkarm_Deckel_rot",
-            "prim_path": "/World/Production_Line/Schwenkarm_Deckel/RevoluteJoint_rotatory",
+            "prim_path": "/World/Production_Line/Schwenkarm_Deckel/Schwenkarm_Deckel_move_translatory/RevoluteJoint_rotatory",
             "attribute": "drive:angular:physics:targetPosition",
-            "target_value": 90.0,
+            "target_value": -179.0,
             "mode": "toggle"
         },
         {
@@ -63,8 +63,18 @@
             "node_id": "Schwenkarm_Deckel_trans",
             "prim_path": "/World/Production_Line/Schwenkarm_Deckel/PrismaticJoint_translatory",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": -0.015,
+            "target_value": -0.005,
             "mode": "toggle"
+        },
+        {
+            "display_name": "Sauggreifer",
+            "node_id": "Sauggreifer_EIN",
+            "prim_path": "/World/Production_Line/Schwenkarm_Deckel/Schwenkarm_Deckel_move_translatory/Schwenkarm_Deckel_move_rotatory/tn__Saubnapf1_zH/tn__Volumenkrper2_gm2/SaugnapfDeckelJoint",
+            "attribute": "",
+            "target_value": 1.0,
+            "mode": "suction",
+            "suction_gripper_path": "/World/Production_Line/Schwenkarm_Deckel/Schwenkarm_Deckel_move_translatory/Schwenkarm_Deckel_move_rotatory/tn__Saubnapf1_zH/tn__Volumenkrper2_gm2/SaugnapfDeckelJoint",
+            "suction_target_path": "/World/Production_Line/Deckelmagazin/Deckel"
         }
     ]
 }
