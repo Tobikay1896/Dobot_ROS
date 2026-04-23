@@ -10,6 +10,7 @@ import aiohttp
 from datetime import datetime
 from .suction import SuctionGripper
 
+
 async def _cancel_and_await(tasks):
     for task in tasks:
         if not task.done():
@@ -68,11 +69,13 @@ class MyExtension(omni.ext.IExt):
 
         self._sim_mode = True
         self._poll_task = None
+        self._sim_update_task = None
 
         self._build_ui()
         self.load_nodes_from_json()
         self._subscribe_timeline()
         self._suction = SuctionGripper(self)
+
         self._log("Extension gestartet", "info")
         self._log("SIM-Modus aktiv", "info")
 
@@ -234,22 +237,56 @@ class MyExtension(omni.ext.IExt):
         )
 
     def _on_timeline_event(self, event):
+        if event.type == int(omni.timeline.TimelineEventType.PLAY):
+            if self._sim_update_task and not self._sim_update_task.done():
+                self._sim_update_task.cancel()
+            self._sim_update_task = asyncio.ensure_future(self._sim_update_loop())
+            self._active_tasks.append(self._sim_update_task)
 
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
+        elif event.type == int(omni.timeline.TimelineEventType.STOP):
             self._on_sim_stop()
 
     def _on_sim_stop(self):
         self._log("Simulation gestoppt", "info")
+
+        if self._sim_update_task and not self._sim_update_task.done():
+            self._sim_update_task.cancel()
+            self._sim_update_task = None
+
         self._suction.reset()
+        self._reset_all_to_zero()
+
+    async def _sim_update_loop(self):
+        """
+        Läuft immer während die Simulation PLAY ist.
+        Hält den Deckel über dem Maze und prüft die Presse.
+        """
+        try:
+            while self._is_running:
+                try:
+                    self._suction.update_hold_position()
+
+                    self._suction.wait_and_press_if_ready(
+                        press_prim_path="/World/Production_Line/Presse/PrismaticJoint",
+                        target_attr="drive:linear:physics:targetPosition",
+                        reached_value=-0.035,
+                        z_down=0.002,
+                        tolerance=1e-4
+                    )
+
+                    await asyncio.sleep(0.05)
+
+                except asyncio.CancelledError:
+                    raise
+                except Exception as e:
+                    self._log(f"SIM Update Fehler: {e}", "error")
+                    await asyncio.sleep(0.1)
+        except asyncio.CancelledError:
+            pass
 
     def _reset_all_to_zero(self):
         self._log("Simulation gestartet - setze alle Werte auf 0", "info")
         self._suction.reset()
-
-        stage = omni.usd.get_context().get_stage()
-        if not stage:
-            return
-        self._log("Simulation gestartet - setze alle Werte auf 0", "info")
 
         stage = omni.usd.get_context().get_stage()
         if not stage:
@@ -586,6 +623,15 @@ class MyExtension(omni.ext.IExt):
             self._set_status_text("Verbunden", CLR_GREEN)
             while self._is_running and not self._sim_mode:
                 try:
+                    self._suction.update_hold_position()
+                    self._suction.wait_and_press_if_ready(
+                        press_prim_path="/World/Production_Line/Presse/PrismaticJoint",
+                        target_attr="drive:linear:physics:targetPosition",
+                        reached_value=-0.035,
+                        z_down=0.002,
+                        tolerance=1e-4
+                    )
+
                     await self._poll_all_nodes(session)
                     self._poll_count += 1
                     if hasattr(self, "_poll_label"):
@@ -771,6 +817,9 @@ class MyExtension(omni.ext.IExt):
         if self._poll_task and not self._poll_task.done():
             self._poll_task.cancel()
 
+        if self._sim_update_task and not self._sim_update_task.done():
+            self._sim_update_task.cancel()
+
         tasks_to_cancel = [t for t in self._active_tasks if not t.done()]
         self._active_tasks = []
         self.node_labels = {}
@@ -779,6 +828,7 @@ class MyExtension(omni.ext.IExt):
         self._impulse_positions = {}
         self._impulse_armed = {}
         self._velocity_running = {}
+        self._sim_update_task = None
 
         if hasattr(self, "_window") and self._window:
             self._window.destroy()

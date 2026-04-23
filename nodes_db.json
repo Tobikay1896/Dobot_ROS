@@ -63,7 +63,7 @@
             "node_id": "Schwenkarm_Deckel_trans",
             "prim_path": "/World/Production_Line/Schwenkarm_Deckel/PrismaticJoint_translatory",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": -0.005,
+            "target_value": -0.010,
             "mode": "toggle"
         },
         {
