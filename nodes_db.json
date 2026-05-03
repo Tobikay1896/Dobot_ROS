@@ -3,10 +3,7 @@
         {
             "display_name": "BA_Start",
             "node_id": "BA_Start",
-            "prim_path": "/World/Production_Line/Schwenkarm_Deckel/RevoluteJoint_rotatory",
-            "attribute": "drive:angular:physics:targetPosition",
-            "target_value": 0.0,
-            "mode": "toggle"
+            "mode": "routine"
         },
         {
             "display_name": "BM_MoveFront_Set",
@@ -23,7 +20,7 @@
             "attribute": "drive:angular:physics:targetPosition",
             "target_value": 0.0,
             "mode": "impulse",
-            "step_degrees": -20.0
+            "step_degrees": -60.0
         },
         {
             "display_name": "DM_MoveFront_Set",
@@ -47,7 +44,7 @@
             "node_id": "Squeezer_start_set",
             "prim_path": "/World/Production_Line/Presse/PrismaticJoint",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": -0.035,
+            "target_value": -0.022,
             "mode": "toggle"
         },
         {
@@ -63,14 +60,14 @@
             "node_id": "Schwenkarm_Deckel_trans",
             "prim_path": "/World/Production_Line/Schwenkarm_Deckel/PrismaticJoint_translatory",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": -0.010,
+            "target_value": -0.01,
             "mode": "toggle"
         },
         {
             "display_name": "Sauggreifer",
             "node_id": "Sauggreifer_EIN",
             "prim_path": "/World/Production_Line/Schwenkarm_Deckel/Schwenkarm_Deckel_move_translatory/Schwenkarm_Deckel_move_rotatory/tn__Saubnapf1_zH/tn__Volumenkrper2_gm2/SaugnapfDeckelJoint",
-            "attribute": "",
+            "attribute": "drive:angular:physics:targetPosition",
             "target_value": 1.0,
             "mode": "suction",
             "suction_gripper_path": "/World/Production_Line/Schwenkarm_Deckel/Schwenkarm_Deckel_move_translatory/Schwenkarm_Deckel_move_rotatory/tn__Saubnapf1_zH/tn__Volumenkrper2_gm2/SaugnapfDeckelJoint",

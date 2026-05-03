@@ -21,7 +21,6 @@ class SuctionGripper:
         self._ext = ext
         self._active = False
         self._held = False
-        self._placed = False
         self._press_offset_z = 0.0
 
     def _log(self, msg, level="info"):
@@ -83,7 +82,6 @@ class SuctionGripper:
         self.remove_joint()
         self._active = False
         self._held = False
-        self._placed = False
         self._press_offset_z = 0.0
         self._log("Reset", "info")
 
@@ -155,7 +153,6 @@ class SuctionGripper:
     def update_hold_position(self):
         """
         Muss regelmäßig aufgerufen werden, damit der Deckel dem Maze folgt.
-        Nur aktualisieren, wenn Abweichung relevant ist.
         """
         if not self._held:
             return False
@@ -163,21 +160,6 @@ class SuctionGripper:
         snap_world = self._compute_maze_snap_world()
         if snap_world is None:
             return False
-
-        target_prim = self._get_target_prim()
-        if not target_prim or not target_prim.IsValid():
-            return False
-
-        time = Usd.TimeCode.Default()
-        current_world = UsdGeom.Xformable(target_prim).ComputeLocalToWorldTransform(time)
-        current_pos = current_world.ExtractTranslation()
-
-        diff = snap_world - current_pos
-        dist2 = diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]
-
-        # Nur bei relevanter Abweichung wirklich setzen
-        if dist2 < 1e-10:
-            return True
 
         ok = self._set_target_world_position(snap_world)
         return ok
@@ -219,11 +201,9 @@ class SuctionGripper:
 
     def wait_and_press_if_ready(self, press_prim_path, target_attr, reached_value, z_down=0.002, tolerance=1e-4):
         """
-        Pressenlogik erst aktiv, nachdem einmal angesaugt und wieder losgelassen wurde.
+        Prüft ein Presse-Attribut. Wenn Zielwert erreicht ist:
+        Deckel 2 mm oder gewünschten Wert nach unten setzen.
         """
-        if not self._placed:
-            return False
-
         stage = self._stage()
         if not stage:
             self._log("Keine Stage vorhanden", "error")
@@ -244,11 +224,13 @@ class SuctionGripper:
             return False
 
         current = attr.Get()
+        self._log(f"Presse Attributwert: {current}", "info")
 
         if current is None:
             return False
 
         if abs(float(current) - float(reached_value)) <= float(tolerance):
+            self._log("Presse Zielwert erreicht -> Deckel wird abgesenkt", "ok")
             return self.press_down(z_down=z_down)
 
         return False
@@ -257,7 +239,6 @@ class SuctionGripper:
         ok = self._set_target_kinematic(False)
         if ok:
             self._held = False
-            self._placed = False
             self._press_offset_z = 0.0
             self._log("Deckel wieder dynamisch", "info")
         return ok
@@ -267,7 +248,6 @@ class SuctionGripper:
         self.remove_joint()
         self._active = False
         self._held = True
-        self._placed = True
         self._log("Sauggreifer AUS - Deckel folgt Maze", "ok")
 
     def attach(self):
@@ -363,7 +343,6 @@ class SuctionGripper:
 
         self._active = True
         self._held = False
-        self._placed = False
         self._press_offset_z = 0.0
         self._log("Sauggreifer EIN ✅", "ok")
         return True
