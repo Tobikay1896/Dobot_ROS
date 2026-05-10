@@ -10,7 +10,7 @@
             "node_id": "BM_MoveFront_Set",
             "prim_path": "/World/Production_Line/Mazemagazin/Mazemagazin_Prismatic",
             "attribute": "drive:linear:physics:targetPosition",
-            "target_value": 0.085,
+            "target_value": 0.09,
             "mode": "toggle"
         },
         {
