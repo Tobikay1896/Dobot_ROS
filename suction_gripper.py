@@ -17,6 +17,7 @@ from .constants import (
     SUCTION_JOINT_PATH, PLACE_TARGET_PATH,
     PLACE_OFFSET_X, PLACE_OFFSET_Y, PLACE_OFFSET_Z,
     DECKEL_HALF_HEIGHT, SAFETY_OFFSET,
+    DECKEL_START_LOCAL_POS,
 )
 
 
@@ -29,6 +30,7 @@ class SuctionGripper:
         self._held = False             # Deckel wird gehalten?
         self._placed = False           # Bereits einmal abgesetzt?
         self._press_offset_z = 0.0     # Aktuelles Press-Delta
+        self._saved_local_pos = None   # Deckel-Ursprungsposition (lokale Koordinaten)
 
     # ---------------------------------------------------------------
     # Logging-Helfer
@@ -86,6 +88,48 @@ class SuctionGripper:
         return True
 
     # ---------------------------------------------------------------
+    # Startposition speichern / wiederherstellen
+    # ---------------------------------------------------------------
+    def save_start_position(self):
+        """Einmalig beim Extension-Start aufrufen, solange Deckel noch unberührt ist."""
+        target_prim = self._get_target_prim()
+        if not target_prim or not target_prim.IsValid():
+            self._log("Deckel nicht gefunden – Startposition nicht gespeichert", "error")
+            return False
+        xform = UsdGeom.Xformable(target_prim)
+        translate_op = next(
+            (op for op in xform.GetOrderedXformOps()
+             if op.GetOpType() == UsdGeom.XformOp.TypeTranslate),
+            None,
+        )
+        if translate_op:
+            self._saved_local_pos = translate_op.Get()
+            self._log(f"Startposition gespeichert: {self._saved_local_pos}", "info")
+            return True
+        self._log("Kein TranslateOp gefunden – Startposition nicht gespeichert", "info")
+        return False
+
+    def _restore_start_position(self):
+        """Setzt den Deckel zurück auf die Ursprungsposition.
+        Priorität: dynamisch gespeichert > Konstante aus constants.py"""
+        target_pos = self._saved_local_pos if self._saved_local_pos is not None \
+            else Gf.Vec3d(*DECKEL_START_LOCAL_POS)
+
+        target_prim = self._get_target_prim()
+        if not target_prim or not target_prim.IsValid():
+            return
+        xform = UsdGeom.Xformable(target_prim)
+        translate_op = next(
+            (op for op in xform.GetOrderedXformOps()
+             if op.GetOpType() == UsdGeom.XformOp.TypeTranslate),
+            None,
+        )
+        if translate_op is None:
+            translate_op = xform.AddTranslateOp()
+        translate_op.Set(Gf.Vec3d(*[float(x) for x in target_pos]))
+        self._log(f"Position wiederhergestellt: {target_pos}", "info")
+
+    # ---------------------------------------------------------------
     # Joint-Verwaltung
     # ---------------------------------------------------------------
     def joint_exists(self):
@@ -102,8 +146,10 @@ class SuctionGripper:
 
     # ---------------------------------------------------------------
     def reset(self):
-        """Setzt den Gripper komplett zurück."""
+        """Setzt den Gripper komplett zurück: Joint entfernen, Deckel auf Startposition, dynamisch."""
         self.remove_joint()
+        self._restore_start_position()
+        self._set_target_kinematic(False)
         self._active = False
         self._held = False
         self._placed = False
@@ -314,14 +360,26 @@ class SuctionGripper:
             translate_op = xform.AddTranslateOp()
         translate_op.Set(Gf.Vec3d(*[float(x) for x in local_pos]))
 
+        # Kontaktpunkt im Body0-Koordinatensystem berechnen
+        body0_world = UsdGeom.Xformable(body0_prim).ComputeLocalToWorldTransform(time)
+        contact_in_body0 = body0_world.GetInverse().Transform(gripper_world_pos)
+
+        lp0 = Gf.Vec3f(float(contact_in_body0[0]), float(contact_in_body0[1]), float(contact_in_body0[2]))
+        self._log(
+            f"[Joint-Debug] Body0: {body0_prim.GetPath()} | "
+            f"Greifer-Welt: ({gripper_world_pos[0]:.3f}, {gripper_world_pos[1]:.3f}, {gripper_world_pos[2]:.3f}) | "
+            f"LocalPos0: ({lp0[0]:.3f}, {lp0[1]:.3f}, {lp0[2]:.3f})",
+            "info"
+        )
+
         # Joint erzeugen
         self.remove_joint()
         joint = UsdPhysics.FixedJoint.Define(stage, SUCTION_JOINT_PATH)
         joint.GetBody0Rel().SetTargets([Sdf.Path(str(body0_prim.GetPath()))])
         joint.GetBody1Rel().SetTargets([Sdf.Path(SUCTION_TARGET_PATH)])
 
-        # Lokale Joint-Anker (Werte stammen aus dem Original-Setup)
-        joint.GetLocalPos0Attr().Set(Gf.Vec3f(0.0, -29.0, 49.0))
+        # Lokaler Anker am Greifer – vollständig aus Szene berechnet
+        joint.GetLocalPos0Attr().Set(lp0)
         joint.GetLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
         joint.GetLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
         joint.GetLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))

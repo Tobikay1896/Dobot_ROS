@@ -13,11 +13,10 @@ class Routines:
     """Vordefinierte automatisierte Abläufe."""
 
     def __init__(self, ext):
-        # Wir verwenden direkt das Extension-Objekt für Zugriff auf
-        # suction, node_manager und Logging.
         self._ext = ext
         self._gesamt_running = False
         self._ba_running = False
+        self._gesamt_task = None
 
     # ---------------------------------------------------------------
     # GESAMTPROZESS
@@ -31,7 +30,16 @@ class Routines:
             self._ext.logger.log("Gesamtprozess läuft bereits", "error")
             return
         self._ext.logger.log("▶ Gesamtprozess → Routine gestartet", "info")
-        asyncio.ensure_future(self._run_gesamtprozess())
+        self._gesamt_task = asyncio.ensure_future(self._run_gesamtprozess())
+
+    def cancel(self):
+        """Bricht alle laufenden Routinen ab (z.B. bei Simulationsstop)."""
+        if self._gesamt_task and not self._gesamt_task.done():
+            self._gesamt_task.cancel()
+            self._ext.logger.log("Gesamtprozess abgebrochen (Simulation gestoppt)", "info")
+        self._gesamt_task = None
+        self._gesamt_running = False
+        self._ba_running = False
 
     async def _run_gesamtprozess(self):
         self._gesamt_running = True

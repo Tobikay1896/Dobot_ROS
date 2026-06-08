@@ -136,6 +136,16 @@ class WebSocketMQTTClient:
             m *= 128
         return value, pos - start
 
+    async def disconnect(self):
+        self._running = False
+        self.connected = False
+        if self.ws:
+            try:
+                await self.ws.close()
+            except Exception:
+                pass
+            self.ws = None
+
     async def _mqtt_pinger(self):
         while self._running and self.connected:
             try:

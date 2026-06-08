@@ -39,8 +39,8 @@ MQTT_KEEPALIVE  = 60
 # -------------------------------------------------------------------------
 # REST-API-Endpunkte
 # -------------------------------------------------------------------------
-API_URL_GET = "[digitaltwinservice.de](https://digitaltwinservice.de/api/Database/GetValue)"
-API_URL_SET = "[digitaltwinservice.de](https://digitaltwinservice.de/api/Database/SetValue)"
+API_URL_GET = "https://digitaltwinservice.de/api/Database/GetValue"
+API_URL_SET = "https://digitaltwinservice.de/api/Database/SetValue"
 API_KEY     = "2b56f658-b11f-4067-9537-631bf27a30f0"
 
 # -------------------------------------------------------------------------
@@ -64,3 +64,10 @@ PLACE_OFFSET_Y      = 0.0
 PLACE_OFFSET_Z      = 0.0
 DECKEL_HALF_HEIGHT  = 0.0025   # 5 mm / 2 → halbe Deckelhöhe
 SAFETY_OFFSET       = 0.0005   # 0.5 mm Sicherheitsabstand
+
+# -------------------------------------------------------------------------
+# Deckel-Startposition (lokal relativ zu /World/Production_Line/Deckelmagazin)
+# Aus dem Isaac-Sim-Property-Panel abgelesen. Wird beim Reset als Ziel gesetzt.
+# -------------------------------------------------------------------------
+DECKEL_START_LOCAL_POS = (-72.15972, -0.93587, 7.15066)
+DECKEL_START_LOCAL_ROT = (0.0, 0.0, 0.0)   # Euler XYZ

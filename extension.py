@@ -87,16 +87,26 @@ class MyExtension(omni.ext.IExt):
                                 self._set_status_text)
         self.timeline = TimelineHandler(self.suction, self.node_manager, self.logger)
         self.routines = Routines(self)
+        self.timeline.set_routines(self.routines)
 
         # 4) Daten laden + Timeline abonnieren
         self.node_manager.load(self._on_control_clicked)
         self.timeline.subscribe()
 
-        # 5) Sauggreifer-Initialzustand: Deckel dynamisch
-        self.suction._set_target_kinematic(False)
+        # 5) Sauggreifer-Initialzustand: Startposition speichern + Deckel dynamisch
+        # Mit kurzer Verzögerung, damit die Stage vollständig geladen ist
+        t = asyncio.ensure_future(self._init_suction())
+        self._active_tasks.append(t)
 
         self.logger.log("Extension gestartet", "info")
         self.logger.log("SIM-Modus aktiv", "info")
+
+    async def _init_suction(self):
+        """Stage-Ready abwarten, dann Deckel-Startposition sichern und dynamisch schalten."""
+        import asyncio as _asyncio
+        await _asyncio.sleep(0.5)
+        self.suction.save_start_position()
+        self.suction._set_target_kinematic(False)
 
     # =================================================================
     def on_shutdown(self):

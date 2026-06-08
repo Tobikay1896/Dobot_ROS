@@ -22,6 +22,11 @@ class TimelineHandler:
         self._sim_update_task = None
         self._is_running = True
         self._active_tasks = []
+        self._routines = None
+
+    def set_routines(self, routines):
+        """Verbindet die Routines-Instanz, damit sie bei STOP abgebrochen werden."""
+        self._routines = routines
 
     # ---------------------------------------------------------------
     def subscribe(self):
@@ -38,6 +43,8 @@ class TimelineHandler:
     # ---------------------------------------------------------------
     def _on_event(self, event):
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
+            # Sauggreifer-Reset: alle Joints löschen, Deckel auf Startposition, dynamisch
+            self._suction.reset()
             # Vorhandenen Loop ggf. abbrechen
             if self._sim_update_task and not self._sim_update_task.done():
                 self._sim_update_task.cancel()
@@ -50,6 +57,8 @@ class TimelineHandler:
     # ---------------------------------------------------------------
     def _on_stop(self):
         self._logger.log("Simulation gestoppt", "info")
+        if self._routines:
+            self._routines.cancel()
         if self._sim_update_task and not self._sim_update_task.done():
             self._sim_update_task.cancel()
             self._sim_update_task = None
@@ -83,7 +92,7 @@ class TimelineHandler:
     def _reset_all_to_zero(self):
         """Setzt alle Werte (USD + Labels) auf 0 nach Simulationsstop."""
         from .constants import CLR_RED, CLR_TEXT_DIM
-        self._logger.log("Simulation gestartet - setze alle Werte auf 0", "info")
+        self._logger.log("Simulation gestoppt - setze alle Werte auf 0", "info")
         self._suction.reset()
 
         stage = omni.usd.get_context().get_stage()
