@@ -1,0 +1,37 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {section}{\numberline {1}Übersicht}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Ziele}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Systemvoraussetzungen}{3}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Dateistruktur}{3}{section.2}%
+\contentsline {section}{\numberline {3}Architektur}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Datenfluss}{4}{subsection.3.1}%
+\contentsline {section}{\numberline {4}Kinematisches Modell}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Koordinatenkonventionen (pydobot)}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Isaac-Sim-Gelenke und Einheitenstrategie}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Berechnungsformeln (in Grad)}{4}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}joint\_1 und joint\_2}{4}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}joint\_5 (Parallelogramm-Kompensation)}{5}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}joint\_6 (Endeffector-Vertikalisierung)}{5}{subsubsection.4.3.3}%
+\contentsline {paragraph}{Forderung:}{5}{subsubsection.4.3.3}%
+\contentsline {paragraph}{Herleitung:}{5}{subsubsection.4.3.3}%
+\contentsline {paragraph}{Wichtiger Hinweis:}{5}{equation.11}%
+\contentsline {section}{\numberline {5}Module und Klassen}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Lazy-Import-System}{5}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Klasse \texttt {DobotROSNode}}{6}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}Fehlerbehandlung in \texttt {update\_step()}}{6}{subsubsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.3}Klasse \texttt {DobotBridgeExtension}}{7}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Dynamic-Control-Kopplung}{7}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Initialisierungsproblem}{7}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Lazy-Initialisierung}{7}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Gelenkwinkel setzen}{7}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}USD-Pfad der Artikulation}{8}{subsection.6.4}%
+\contentsline {section}{\numberline {7}UI-Fenster}{8}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Docking}{8}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Layout-Übersicht}{8}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Connect-Button-Text}{9}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Konstanten (\texttt {constants.py})}{9}{section.8}%
+\contentsline {section}{\numberline {9}Installation und Inbetriebnahme}{9}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Erstinstallation}{9}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Betrieb}{9}{subsection.9.2}%
+\contentsline {section}{\numberline {10}Bekannte Einschränkungen}{9}{section.10}%
+\contentsline {section}{\numberline {11}PDF erzeugen}{10}{section.11}%

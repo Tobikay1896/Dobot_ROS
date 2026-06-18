@@ -44,6 +44,30 @@ API_URL_SET = "https://digitaltwinservice.de/api/Database/SetValue"
 API_KEY     = "2b56f658-b11f-4067-9537-631bf27a30f0"
 
 # -------------------------------------------------------------------------
+# USD-Pfad des Dobot-Roboters in der geladenen Szene
+# -------------------------------------------------------------------------
+ROBOT_USD_PATH = "/World/magician/base_link"
+
+# -------------------------------------------------------------------------
+# Nullposition / Home-Position (kartesisch, in mm / Grad)
+# Abgelesen aus Isaac-Sim-Dashboard bei kalibrierter Startlage.
+# -------------------------------------------------------------------------
+HOME_X =  -3.7
+HOME_Y = 227.8
+HOME_Z =  66.1
+HOME_R =  88.4
+
+# -------------------------------------------------------------------------
+# Servo an GP3 (RC-Servo, PWM 50 Hz)
+# GP3-PWM1 entspricht Dobot-IO-Adresse 15 laut Pinout-Tabelle.
+# Falls der Servo nicht reagiert, Adresse auf 16 (PWM2) ändern.
+# -------------------------------------------------------------------------
+GP3_PWM_ADDRESS = 15     # IO-Adresse des PWM1-Pins auf GP3
+SERVO_FREQ_HZ   = 50.0   # Trägerfrequenz Standard-RC-Servo
+SERVO_MIN_DUTY  = 0.05   # 1 ms Pulsbreite  →   0°
+SERVO_MAX_DUTY  = 0.10   # 2 ms Pulsbreite  → 180°
+
+# -------------------------------------------------------------------------
 # USD-Pfade für den Sauggreifer und das Pick-/Place-Setup
 # -------------------------------------------------------------------------
 SUCTION_TARGET_PATH       = "/World/Production_Line/Deckelmagazin/Deckel"

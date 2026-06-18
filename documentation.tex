@@ -1,0 +1,570 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\geometry{margin=2.5cm}
+
+% -----------------------------------------------------------------------
+% Code-Listing-Stil
+% -----------------------------------------------------------------------
+\definecolor{codebg}{rgb}{0.95,0.95,0.97}
+\definecolor{codegreen}{rgb}{0.0,0.5,0.0}
+\definecolor{codegray}{rgb}{0.4,0.4,0.4}
+\definecolor{codeblue}{rgb}{0.0,0.0,0.7}
+\definecolor{codepurple}{rgb}{0.5,0.0,0.5}
+
+\lstdefinestyle{python}{
+  language=Python,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codegreen},
+  commentstyle=\color{codegray}\itshape,
+  numberstyle=\tiny\color{codegray},
+  numbers=left,
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{codegray!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=b,
+  morekeywords={self, True, False, None, async, await},
+}
+
+\lstset{style=python}
+
+% -----------------------------------------------------------------------
+% Kopf- und Fußzeile
+% -----------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Dobot ROS2 Bridge – Isaac Sim Extension}
+\lhead{OmniMazeRunnerExtensions}
+\rfoot{Seite \thepage}
+
+% -----------------------------------------------------------------------
+% Dokument
+% -----------------------------------------------------------------------
+\title{
+  \textbf{Dobot ROS2 Bridge}\\
+  \large Isaac Sim Extension -- Technische Dokumentation
+}
+\author{OmniMazeRunnerExtensions \\ Tobias Küster}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ===================================================================
+\section{Übersicht}
+% ===================================================================
+
+Die Extension \texttt{dobot\_ros} stellt eine bidirektionale Kopplung
+zwischen einem realen \textbf{Dobot Magician}-Roboterarm und einem
+\textbf{NVIDIA Isaac Sim}-Simulationsmodell her.
+
+\subsection{Ziele}
+\begin{itemize}
+  \item \textbf{Digital Twin (Richtung 1):} Der echte Roboter bewegt sich
+        und das Simulationsmodell folgt in Echtzeit.
+  \item \textbf{Fernsteuerung (Richtung 2):} Über das UI-Panel werden
+        Jog-Befehle, Vertikalbewegungen und der Sauger an den echten
+        Roboter gesendet.
+  \item \textbf{ROS2-Kompatibilität:} Gelenkzustände werden zusätzlich auf
+        dem Topic \texttt{/joint\_states} publiziert, damit externe
+        ROS2-Knoten (z.\,B. MoveIt) die aktuelle Pose empfangen können.
+\end{itemize}
+
+\subsection{Systemvoraussetzungen}
+\begin{tabular}{ll}
+  \toprule
+  Komponente & Version / Anforderung \\
+  \midrule
+  NVIDIA Isaac Sim & 5.1 oder neuer \\
+  Python & 3.11 (Isaac-Sim-intern) \\
+  ROS2 & Humble oder Jazzy (Windows-Bridge) \\
+  pydobot & $\geq$ 1.3 (pip-installierbar) \\
+  pyserial & $\geq$ 3.5 (Abhängigkeit von pydobot) \\
+  Dobot Magician & USB-Verbindung, COM-Port bekannt \\
+  \bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{Dateistruktur}
+% ===================================================================
+
+\begin{tabular}{ll}
+  \toprule
+  Datei & Beschreibung \\
+  \midrule
+  \texttt{extension.py}       & Hauptlogik: ROS-Node, Kinematik, DC-Kopplung, UI \\
+  \texttt{constants.py}       & Farb-, Pfad- und MQTT-Konstanten \\
+  \texttt{\_\_init\_\_.py}    & Exportiert \texttt{DobotBridgeExtension} \\
+  \texttt{extension.toml}     & Isaac-Sim-Manifest (Name, Version, Module) \\
+  \texttt{install\_extension.py} & Kopiert Extension in den Benutzer-Erweiterungs-Pfad \\
+  \texttt{set\_extension\_path.ps1} & PowerShell-Skript zum Setzen des Extension-Pfads \\
+  \texttt{documentation.tex}  & Diese Dokumentation (LaTeX-Quelle) \\
+  \texttt{build\_docs.py}     & Erstellt \texttt{documentation.pdf} aus dieser Datei \\
+  \bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{Architektur}
+% ===================================================================
+
+Die Extension besteht aus zwei Hauptklassen:
+
+\begin{description}[leftmargin=3cm, style=nextline]
+  \item[\texttt{DobotROSNode}]
+    Kapselt die serielle USB-Verbindung zum echten Dobot (via
+    \texttt{pydobot}) sowie den ROS2-Node und Publisher.
+    Stellt \texttt{update\_step()}, \texttt{set\_suction()},
+    \texttt{move\_vertical()} und \texttt{jog()} bereit.
+
+  \item[\texttt{DobotBridgeExtension}]
+    Subklasse von \texttt{omni.ext.IExt}. Verwaltet das Omniverse-UI-Fenster,
+    die Isaac-Sim-Dynamic-Control-Kopplung und den Frame-Update-Loop.
+\end{description}
+
+\subsection{Datenfluss}
+
+\begin{enumerate}
+  \item \textbf{Lesen:} \texttt{DobotROSNode.update\_step()} ruft
+        \texttt{device.pose()} auf und liest $(x,y,z,r,j_1,j_2,j_3,j_4)$
+        vom Dobot.
+  \item \textbf{Kinematik:} Die Rohwinkel werden in Isaac-Sim-kompatible
+        Gelenkwinkel umgerechnet (siehe Abschnitt~\ref{sec:kinematik}).
+  \item \textbf{ROS2-Publish:} Eine \texttt{JointState}-Nachricht wird auf
+        \texttt{/joint\_states} veröffentlicht.
+  \item \textbf{DC-API:} \texttt{DobotBridgeExtension.\_drive\_joints()} setzt
+        die Winkel direkt auf die Isaac-Sim-Artikulation.
+  \item \textbf{Dashboard:} Pose und Winkel werden im UI-Panel angezeigt.
+\end{enumerate}
+
+% ===================================================================
+\section{Kinematisches Modell}
+\label{sec:kinematik}
+% ===================================================================
+
+\subsection{Koordinatenkonventionen (pydobot)}
+
+Die pydobot-Bibliothek gibt absolute Weltwinkel in Grad zurück:
+
+\begin{align}
+  j_1 &= \text{Basis-Rotation (Yaw)} \\
+  j_2 &= \text{Oberarm-Winkel von Horizontal (absolut)} \\
+  j_3 &= \text{Unterarm-Winkel von Horizontal (absolut)} \\
+  j_4 &= \text{Endeffektor-Servoansteuerung (relativ)}
+\end{align}
+
+Durch den Parallelogramm-Mechanismus des Dobot Magician gilt
+näherungsweise $j_3 \approx 0°$ (Unterarm bleibt horizontal in
+Weltkoordinaten), sofern der Roboter nicht extern manipuliert wird.
+
+\subsection{Isaac-Sim-Gelenke und Einheitenstrategie}
+
+Das Isaac-Sim-Modell (\texttt{/World/magician}) hat folgende Gelenke.
+USD-native \texttt{eREVOLUTE}-Joints speichern Winkel intern in \textbf{Grad};
+die DC-API \texttt{set\_dof\_state} erwartet daher Grad. Ausnahme:
+\texttt{set\_dof\_position\_target} (PhysX-Drive) erwartet Radiant.
+
+\begin{center}
+\begin{tabular}{clll}
+  \toprule
+  Isaac-Sim-Gelenk & USD-Name & Bedeutung & Einheit (DC-API) \\
+  \midrule
+  $\theta_1$ & \texttt{joint\_1} & Basis-Rotation & Grad \\
+  $\theta_2$ & \texttt{joint\_2} & Schultergelenk & Grad \\
+  $\theta_5$ & \texttt{joint\_5} & Unterarm (Parallelogramm-Kompensation) & Grad \\
+  $\theta_6$ & \texttt{joint\_6} & Endeffektor (Vertikalisierung) & Grad \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Berechnungsformeln (in Grad)}
+
+Alle Formeln werden in Grad ausgeführt. Konvertierung nach Radiant
+erfolgt nur für den ROS2-Publisher und \texttt{set\_dof\_position\_target}.
+
+\subsubsection{joint\_1 und joint\_2}
+
+Direkte Übernahme der pydobot-Werte (bereits in Grad):
+\begin{align}
+  \theta_1 &= j_1 \quad [{}^\circ] \\
+  \theta_2 &= j_2 \quad [{}^\circ]
+\end{align}
+
+\subsubsection{joint\_5 (Parallelogramm-Kompensation)}
+
+Da $j_2$ einen relativen Winkel in der Kette darstellt, $j_3$ aber
+einen absoluten Weltwinkel, muss $\theta_5$ die Differenz ausgleichen,
+damit \texttt{link\_5} (Unterarm) in der korrekten Weltlage bleibt:
+
+\begin{equation}
+  \theta_5 = j_3 - j_2 \quad [{}^\circ]
+  \label{eq:j5}
+\end{equation}
+
+Im Code:
+\begin{lstlisting}[caption={Berechnung joint\_5 in Grad}]
+pos_j5 = j3 - j2   # Grad
+\end{lstlisting}
+
+\subsubsection{joint\_6 (Endeffector-Vertikalisierung)}
+\label{sec:j6herleitung}
+
+\paragraph{Forderung:} \texttt{link\_6} soll unabhängig von der
+Armposition stets senkrecht zeigen (Saugnapf nach unten).
+
+\paragraph{Herleitung:} Die Summe aller Pitch-Rotationen entlang der
+kinematischen Kette muss in Weltkoordinaten $90°$ ergeben
+(Senkrechte, gemessen von Horizontal):
+
+\begin{equation}
+  \theta_2 + \theta_5 + \theta_6 = 90°
+\end{equation}
+
+Einsetzen von~\eqref{eq:j5}:
+\begin{align}
+  j_2 + (j_3 - j_2) + \theta_6 &= 90° \\
+  j_3 + \theta_6 &= 90°
+\end{align}
+
+\textbf{Der $j_2$-Term kürzt sich heraus.} Damit:
+\begin{equation}
+  \boxed{\theta_6 = 90° - j_3 - j_4}
+  \label{eq:j6}
+\end{equation}
+
+$j_4$ wird subtrahiert, da ein positiver Servo-Wert eine Rotation
+entgegen der Vertikalisierungsrichtung bewirkt.
+
+\paragraph{Wichtiger Hinweis:} $j_2$ darf \emph{nicht} in
+Gleichung~\eqref{eq:j6} auftreten. Ein früherer Fehler
+(\texttt{pos\_j6 = j2 + j3 - j4}) ließ $\theta_6$ mit
+der Schulterposition mitlaufen, wodurch der Endeffector bei gestrecktem
+Arm nach oben kippte. Ein weiterer Fehler mischte irrtümlich
+$\frac{\pi}{2}$ (Radiant) mit Grad-Werten — jetzt ist die Formel
+konsequent in Grad formuliert.
+
+Im Code:
+\begin{lstlisting}[caption={Korrekte Berechnung joint\_6 in Grad}]
+# Kette: j2 + (j3-j2) + j6 = 90  =>  j6 = 90 - j3 - j4
+# j2 darf hier NICHT stehen
+pos_j6 = 90.0 - j3 - j4   # Grad
+\end{lstlisting}
+
+% ===================================================================
+\section{Module und Klassen}
+% ===================================================================
+
+\subsection{Lazy-Import-System}
+
+ROS2 (\texttt{rclpy}) und \texttt{pydobot} werden nicht beim
+Extension-Start importiert, sondern erst beim ersten Connect-Klick.
+Dadurch startet die Extension auch in Umgebungen ohne ROS2.
+
+\begin{lstlisting}[caption={Lazy-Import-Mechanismus}]
+_rclpy = None   # Cache: rclpy-Modul
+_Node = None    # Cache: rclpy.node.Node
+_JointState = None  # Cache: sensor_msgs.msg.JointState
+_Dobot = None   # Cache: pydobot.Dobot
+
+def _try_import_ros():
+    global _rclpy, _Node, _JointState
+    if _rclpy is not None:
+        return True  # bereits gecacht
+    try:
+        import rclpy
+        from rclpy.node import Node
+        from sensor_msgs.msg import JointState
+    except Exception:
+        return False
+    _rclpy, _Node, _JointState = rclpy, Node, JointState
+    return True
+\end{lstlisting}
+
+\subsection{Klasse \texttt{DobotROSNode}}
+
+\begin{tabular}{lp{9cm}}
+  \toprule
+  Methode & Beschreibung \\
+  \midrule
+  \texttt{\_\_init\_\_(com\_port)} &
+    Öffnet COM-Port, initialisiert ROS2-Node und Publisher auf
+    \texttt{/joint\_states}. \\
+  \texttt{update\_step()} &
+    Liest Pose vom Dobot, berechnet Gelenkwinkel nach
+    Abschnitt~\ref{sec:kinematik}, publiziert JointState,
+    gibt \texttt{(pose\_dict, joints\_list)} zurück. \\
+  \texttt{set\_suction(active)} &
+    Schaltet Vakuumgreifer; probiert mehrere pydobot-API-Namen
+    für Versionskompatibilität. \\
+  \texttt{move\_vertical(delta\_mm)} &
+    Liest aktuelle Pose, addiert \texttt{delta\_mm} auf Z,
+    sendet \texttt{move\_to}-Befehl. \\
+  \texttt{jog(dx, dy)} &
+    Wie \texttt{move\_vertical}, aber in X-Y-Ebene. \\
+  \texttt{shutdown()} &
+    Schließt COM-Port und zerstört ROS2-Node. \\
+  \bottomrule
+\end{tabular}
+
+\subsubsection{Fehlerbehandlung in \texttt{update\_step()}}
+
+Bei Kommunikationsunterbrechungen (USB-Ausfall, Timeout) werden die
+letzten gültigen Gelenkwinkel aus dem Puffer
+\texttt{last\_valid\_positions} verwendet. So springt das
+Simulationsmodell nicht auf Nullstellung zurück.
+
+\subsection{Klasse \texttt{DobotBridgeExtension}}
+
+\begin{tabular}{lp{9cm}}
+  \toprule
+  Methode & Beschreibung \\
+  \midrule
+  \texttt{on\_startup(ext\_id)} &
+    Erstellt UI-Fenster, initialisiert Zustandsvariablen,
+    startet Docking-Task. \\
+  \texttt{\_dock\_window\_deferred()} &
+    Async-Coroutine: wartet 2 Frames, dockt Fenster neben
+    das Property-Panel. \\
+  \texttt{\_init\_articulation(path, silent)} &
+    Bindet die Isaac-Sim-DC-API an die Roboter-Artikulation.
+    Wird solange wiederholt, bis Physik läuft. \\
+  \texttt{\_drive\_joints(joints\_rad)} &
+    Setzt Gelenkwinkel über \texttt{set\_dof\_state} und
+    \texttt{set\_dof\_position\_target} auf das Modell. \\
+  \texttt{\_on\_update(event)} &
+    Frame-Callback: DC-Retry, Dobot-Polling,
+    Modellkopplung, Dashboard-Update. \\
+  \texttt{\_on\_connect\_clicked()} &
+    Startet Verbindung, markiert DC-Init als ausstehend. \\
+  \texttt{\_on\_disconnect\_clicked()} &
+    Trennt Verbindung, setzt UI-Zustand zurück. \\
+  \texttt{\_cleanup()} &
+    Gibt alle Ressourcen frei (Subscription, DC, ROS2-Node). \\
+  \texttt{on\_shutdown()} &
+    Cancelt Dock-Task, ruft \texttt{\_cleanup()}, zerstört Fenster. \\
+  \bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{Dynamic-Control-Kopplung}
+% ===================================================================
+
+\subsection{Initialisierungsproblem}
+
+Die Isaac-Sim-Dynamic-Control-API (\texttt{omni.isaac.dynamic\_control})
+benötigt eine \emph{laufende} Physik-Simulation. Ein Aufruf von
+\texttt{get\_articulation()} vor dem Drücken von \emph{Play} liefert
+\texttt{INVALID\_HANDLE} und erzeugt eine Warning im Log.
+
+\subsection{Lazy-Initialisierung}
+
+Um Log-Spam zu vermeiden, wird \texttt{\_init\_articulation()} nur dann
+aufgerufen, wenn \texttt{omni.timeline} meldet, dass die Simulation
+läuft:
+
+\begin{lstlisting}[caption={Lazy DC-Initialisierung in \_on\_update()}]
+if self._art_init_pending and self._dc is None:
+    import omni.timeline
+    if omni.timeline.get_timeline_interface().is_playing():
+        self._init_articulation(robot_path, silent=True)
+        if self._dc is not None:
+            self._art_init_pending = False
+\end{lstlisting}
+
+\subsection{Gelenkwinkel setzen}
+
+Pro Gelenk werden zwei DC-Aufrufe verwendet, um beide möglichen
+Konfigurationen abzudecken:
+
+\begin{lstlisting}[caption={Doppelter DC-Aufruf pro Gelenk}]
+# Formeln liefern Grad; DC-API erwartet Radiant fuer beide Aufrufe
+rad = math.radians(float(angle_deg))
+
+# 1) Kinematischen Zustand direkt setzen (kein PD-Drive noetig)
+state = self._dc_mod.DofState()
+state.pos = rad   # Radiant
+state.vel = 0.0
+self._dc.set_dof_state(dof_handle, state, self._dc_mod.STATE_POS)
+
+# 2) PhysX-Drive-Target setzen (Bereich [-2pi, 2pi] Pflicht)
+self._dc.set_dof_position_target(dof_handle, rad)
+\end{lstlisting}
+
+\textbf{Einheitenstrategie:}
+\begin{itemize}
+  \item Interne Berechnungen (\texttt{update\_step}) in \textbf{Grad}
+        — einfachere Formeln, direkte Übernahme der pydobot-Werte.
+  \item Beide DC-API-Aufrufe erwarten \textbf{Radiant}; Konvertierung
+        erfolgt in \texttt{\_drive\_joints} mit \texttt{math.radians()}.
+  \item \texttt{set\_dof\_position\_target} erzwingt $[-2\pi,\, 2\pi]$:
+\end{itemize}
+\begin{verbatim}
+PxArticulationJointReducedCoordinate::setDriveTarget() only supports
+target angle in range [-2Pi, 2Pi]
+\end{verbatim}
+
+\subsection{USD-Pfad der Artikulation}
+
+Die \texttt{ArticulationRootAPI} muss auf dem Prim liegen, an dem
+\texttt{get\_articulation()} sucht. Beim Dobot-Magician-Import liegt
+sie auf \texttt{/World/magician/base\_link}, \emph{nicht} auf
+\texttt{/World/magician}.
+
+% ===================================================================
+\section{UI-Fenster}
+% ===================================================================
+
+\subsection{Docking}
+
+Das Fenster dockt automatisch als Tab neben das
+Isaac-Sim-\emph{Property}-Panel:
+
+\begin{lstlisting}[caption={Deferred Docking}]
+async def _dock_window_deferred(self):
+    await omni.kit.app.get_app().next_update_async()
+    await omni.kit.app.get_app().next_update_async()
+    prop = ui.Workspace.get_window("Property")
+    if prop:
+        self._window.dock_in(prop, ui.DockPosition.SAME)
+\end{lstlisting}
+
+Zwei Frames Verzögerung sind nötig, da das Fenster erst nach dem ersten
+Render-Zyklus im Workspace-Index auftaucht.
+
+Der \texttt{asyncio.Task} wird in \texttt{on\_shutdown()} gecancelt,
+um die Warnung \emph{„extension object is still alive"} zu vermeiden.
+
+\subsection{Layout-Übersicht}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  UI-Element & Funktion \\
+  \midrule
+  Titel-Label & Beschriftung \\
+  COM-Port-Feld + Install & Serielle Schnittstelle; Paketinstallation \\
+  Robot-USD-Feld & USD-Pfad der Artikulation in der Szene \\
+  Connect / Disconnect & Verbindungsaufbau/-trennung \\
+  Suction ON/OFF & Vakuumgreifer \\
+  Up / Down 10 mm & Vertikalbewegung $\pm 10\,\text{mm}$ \\
+  X$\pm$ / Y$\pm$ 5 mm & Horizontaler JOG $\pm 5\,\text{mm}$ \\
+  Status-Label & Aktueller Betriebsstatus \\
+  Pose-Label & Kartesische Position $(x,y,z,r)$ \\
+  Joints-Label & Gelenkwinkel in Grad \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Connect-Button-Text}
+
+Der \emph{Connect}-Button zeigt nach erfolgreicher Verbindung dauerhaft
+\texttt{Connected (COMx)} an, damit der verbundene Port auch dann
+sichtbar bleibt, wenn die Status-Zeile durch spätere Nachrichten
+überschrieben wird.
+
+% ===================================================================
+\section{Konstanten (\texttt{constants.py})}
+% ===================================================================
+
+\begin{tabular}{lp{9cm}}
+  \toprule
+  Konstante & Bedeutung \\
+  \midrule
+  \texttt{ROBOT\_USD\_PATH} &
+    Standard-USD-Pfad der Artikulations-Root
+    (\texttt{/World/magician/base\_link}) \\
+  \texttt{CLR\_*} &
+    ARGB-Farbwerte für das UI-Styling \\
+  \texttt{MQTT\_BROKER}, \texttt{MQTT\_PORT} &
+    Verbindungsparameter für den MQTT-Broker \\
+  \texttt{API\_URL\_GET}, \texttt{API\_URL\_SET}, \texttt{API\_KEY} &
+    REST-API-Endpunkte für Datenbankzugriff \\
+  \texttt{SUCTION\_*}, \texttt{PLACE\_*} &
+    USD-Pfade für den Sauggreifer und das Pick-\&-Place-Setup \\
+  \texttt{DECKEL\_START\_LOCAL\_POS/ROT} &
+    Startposition des Deckels im Magazin \\
+  \bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{Installation und Inbetriebnahme}
+% ===================================================================
+
+\subsection{Erstinstallation}
+
+\begin{enumerate}
+  \item \textbf{Extension einbinden:} In Isaac Sim unter
+        \emph{Window $\to$ Extensions $\to$ gear-Icon} den Pfad\\
+        \texttt{C:\textbackslash{}Bachelorarbeit\textbackslash{}OmniMazeRunnerExtensions}\\
+        als Extension-Suchpfad hinzufügen.
+  \item \textbf{Extension aktivieren:} \texttt{dobot\_ros} in der
+        Extension-Liste suchen und aktivieren.
+  \item \textbf{Pakete installieren:} Auf \emph{Install packages} klicken,
+        um \texttt{pydobot} und \texttt{pyserial} zu installieren.
+        Danach Extension deaktivieren und neu aktivieren.
+\end{enumerate}
+
+\subsection{Betrieb}
+
+\begin{enumerate}
+  \item Isaac Sim starten und eine Szene mit dem Dobot-Magician-Modell
+        laden (\texttt{/World/magician}).
+  \item \texttt{ArticulationRootAPI} auf \texttt{base\_link} prüfen
+        (Property-Panel: \emph{Physics $\to$ Articulation Root}).
+  \item Extension aktivieren; das Panel dockt neben \emph{Property}.
+  \item COM-Port eingeben (Standard: \texttt{COM3}) und \textbf{Connect}
+        klicken. Status: \emph{Warte auf Play\ldots}
+  \item \textbf{Play} drücken. Status: \emph{Modell verbunden: 4/4 DOFs}.
+  \item Das Simulationsmodell folgt dem echten Roboter in Echtzeit.
+\end{enumerate}
+
+% ===================================================================
+\section{Bekannte Einschränkungen}
+% ===================================================================
+
+\begin{itemize}
+  \item ROS2 muss unter Windows als Bridge (z.\,B. über WSL2 oder
+        ROS2 for Windows) verfügbar sein, damit \texttt{rclpy} importiert
+        werden kann.
+  \item Die DC-API gibt eine Warning aus (\emph{Failed to find
+        articulation}), wenn \texttt{get\_articulation()} vor dem Start
+        der Simulation aufgerufen wird. Dies ist mit der
+        Lazy-Initialisierung auf das erste Play-Ereignis beschränkt.
+  \item Die Sauger-Methoden in pydobot variieren zwischen Versionen;
+        die Fallback-Liste in \texttt{set\_suction()} deckt die bekannten
+        Varianten ab.
+  \item Physikalisch ungültige Winkel (außerhalb $[-2\pi,\, 2\pi]$) bei
+        der DC-API führen zu einem PhysX-Fehler. Die Winkel aus
+        \texttt{update\_step()} liegen immer in diesem Bereich.
+\end{itemize}
+
+% ===================================================================
+\section{PDF erzeugen}
+% ===================================================================
+
+Im Extension-Ordner ausführen:
+\begin{verbatim}
+python build_docs.py
+\end{verbatim}
+Das erzeugt \texttt{documentation.pdf} aus dieser Datei.
+
+\end{document}

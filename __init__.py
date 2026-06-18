@@ -1,2 +1,2 @@
-"""Einstiegspunkt für Omniverse."""
-from .extension import MyExtension
+﻿"""Einstiegspunkt für Omniverse."""
+from .extension import DobotBridgeExtension

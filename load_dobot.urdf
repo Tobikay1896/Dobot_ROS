@@ -1,0 +1,163 @@
+<robot name="magician">
+
+    <material name="Black"><color rgba="0 0 0 1"/></material>
+    <material name="White"><color rgba="1 1 1 1"/></material>
+    <material name="Grey"><color rgba="0.9 0.9 0.9 1"/></material>
+
+    <link name="base_link">
+        <inertial>
+            <mass value="1.0"/> <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="./meshes/base_link.STL"/>
+            </geometry>
+            <material name="White"/>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="./meshes/base_link.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint_1" type="revolute">
+        <origin xyz="0 0 0.024" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="link_1"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="150.0" lower="-3.14159" upper="3.14159" velocity="10.0"/>
+        <dynamics damping="1" friction="0"/>
+    </joint>
+
+    <link name="link_1">
+        <inertial>
+            <mass value="0.5"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 1.570796"/>
+            <geometry>
+                <mesh filename="./meshes/link_1.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="./meshes/link_1.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint_2" type="revolute">
+        <origin xyz="-0.01175 -0.01175 0.114" rpy="1.570796 -0.2 0"/>
+        <parent link="link_1"/>
+        <child link="link_2"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="150.0" lower="0" upper="1.570796" velocity="10.0"/>
+        <dynamics damping="1" friction="0"/>
+    </joint>
+
+    <link name="link_2">
+        <inertial>
+            <mass value="0.4"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.004" ixy="0" ixz="0" iyy="0.004" iyz="0" izz="0.004"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="./meshes/link_2.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="./meshes/link_2.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint_5" type="revolute">
+        <origin xyz="0.02699 0.13228 -0.01175" rpy="0 3.14159 -2.094395"/>
+        <parent link="link_2"/>
+        <child link="link_5"/>
+        <axis xyz="0 0 -1"/>
+        <limit effort="100.0" lower="0.0" upper="2.1" velocity="10.0"/>
+        <dynamics damping="1" friction="0"/>
+    </joint>
+
+    <link name="link_5">
+        <inertial>
+            <mass value="0.3"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.003" ixy="0" ixz="0" iyy="0.003" iyz="0" izz="0.003"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="./meshes/link_5.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="./meshes/link_5.dae"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint_6" type="revolute">
+        <origin xyz="0.07431 -0.12684 0.0" rpy="3.1415926 0 1.5707963"/>
+        <parent link="link_5"/>
+        <child link="link_6"/>
+        <axis xyz="0 0 -1"/>
+        <limit effort="50.0" lower="-3.14159" upper="3.14159" velocity="10.0"/>
+        <dynamics damping="1" friction="0"/>
+    </joint>
+
+    <link name="link_6">
+        <inertial>
+            <mass value="0.1"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="./meshes/link_6.STL"/>
+            </geometry>
+            <material name="Grey"/>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="./meshes/link_6.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Sauggreifer fest an link_6 montiert (keine Bewegung nötig) -->
+    <joint name="joint_suction" type="fixed">
+        <origin xyz="0 0 0.04" rpy="0 0 0"/>
+        <parent link="link_6"/>
+        <child link="link_suction"/>
+    </joint>
+
+    <link name="link_suction">
+        <inertial>
+            <mass value="0.05"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="./meshes/suction_gripper_dobot.stl" scale="0.0008 0.0008 0.0008"/>
+            </geometry>
+            <material name="Black"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="./meshes/suction_gripper_dobot.stl" scale="0.0008 0.0008 0.0008"/>
+            </geometry>
+        </collision>
+    </link>
+
+</robot>
