@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.5.19)  10 JUN 2026 13:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.5.19)  26 JUN 2026 11:54
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -370,36 +370,180 @@ Package: titlesec 2025/01/04 v2.17 Sectioning titles
 \titlewidth=\dimen195
 \titlewidthlast=\dimen196
 \titlewidthfirst=\dimen197
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/tools\longtable.sty
+Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
+\LTleft=\skip72
+\LTright=\skip73
+\LTpre=\skip74
+\LTpost=\skip75
+\LTchunksize=\count326
+\LTcapwidth=\dimen198
+\LT@head=\box59
+\LT@firsthead=\box60
+\LT@foot=\box61
+\LT@lastfoot=\box62
+\LT@gbox=\box63
+\LT@cols=\count327
+\LT@rows=\count328
+\c@LT@tables=\count329
+\c@LT@chunks=\count330
+\LT@p@ftn=\toks30
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
+Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
+\col@sep=\dimen199
+\ar@mcellbox=\box64
+\extrarowheight=\dimen256
+\NC@list=\toks31
+\extratabsurround=\skip76
+\backup@length=\skip77
+\ar@cellbox=\box65
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/mdframed\mdframed.sty
+Package: mdframed 2013/07/01 1.9b: mdframed
+ (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/l3packages/xparse\xparse.sty (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/l3kernel\expl3.sty
+Package: expl3 2026-03-20 L3 programming layer (loader) 
+ (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
+File: l3backend-pdftex.def 2026-02-18 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count331
+))
+Package: xparse 2025-10-09 L3 Experimental document command parser
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/zref\zref-abspage.sty
+Package: zref-abspage 2026-03-07 v2.37 Module abspage for zref (HO)
+ (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/zref\zref-base.sty
+Package: zref-base 2026-03-07 v2.37 Module base for zref (HO)
+ (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/generic/etexcmds\etexcmds.sty
+Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/auxhook\auxhook.sty
+Package: auxhook 2019-12-17 v1.6 Hooks for auxiliary files (HO)
+)
+Package zref Info: New property list: main on input line 767.
+Package zref Info: New property: default on input line 768.
+Package zref Info: New property: page on input line 769.
+)
+\c@abspage=\count332
+Package zref Info: New property: abspage on input line 67.
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/needspace\needspace.sty
+Package: needspace 2025/03/13 v1.3e reserve vertical space
+)
+\mdf@templength=\skip78
+\c@mdf@globalstyle@cnt=\count333
+\mdf@skipabove@length=\skip79
+\mdf@skipbelow@length=\skip80
+\mdf@leftmargin@length=\skip81
+\mdf@rightmargin@length=\skip82
+\mdf@innerleftmargin@length=\skip83
+\mdf@innerrightmargin@length=\skip84
+\mdf@innertopmargin@length=\skip85
+\mdf@innerbottommargin@length=\skip86
+\mdf@splittopskip@length=\skip87
+\mdf@splitbottomskip@length=\skip88
+\mdf@outermargin@length=\skip89
+\mdf@innermargin@length=\skip90
+\mdf@linewidth@length=\skip91
+\mdf@innerlinewidth@length=\skip92
+\mdf@middlelinewidth@length=\skip93
+\mdf@outerlinewidth@length=\skip94
+\mdf@roundcorner@length=\skip95
+\mdf@footenotedistance@length=\skip96
+\mdf@userdefinedwidth@length=\skip97
+\mdf@needspace@length=\skip98
+\mdf@frametitleaboveskip@length=\skip99
+\mdf@frametitlebelowskip@length=\skip100
+\mdf@frametitlerulewidth@length=\skip101
+\mdf@frametitleleftmargin@length=\skip102
+\mdf@frametitlerightmargin@length=\skip103
+\mdf@shadowsize@length=\skip104
+\mdf@extratopheight@length=\skip105
+\mdf@subtitleabovelinewidth@length=\skip106
+\mdf@subtitlebelowlinewidth@length=\skip107
+\mdf@subtitleaboveskip@length=\skip108
+\mdf@subtitlebelowskip@length=\skip109
+\mdf@subtitleinneraboveskip@length=\skip110
+\mdf@subtitleinnerbelowskip@length=\skip111
+\mdf@subsubtitleabovelinewidth@length=\skip112
+\mdf@subsubtitlebelowlinewidth@length=\skip113
+\mdf@subsubtitleaboveskip@length=\skip114
+\mdf@subsubtitlebelowskip@length=\skip115
+\mdf@subsubtitleinneraboveskip@length=\skip116
+\mdf@subsubtitleinnerbelowskip@length=\skip117
+ (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/mdframed\md-frame-0.mdf
+File: md-frame-0.mdf 2013/07/01\ 1.9b: md-frame-0
+)
+\mdf@frametitlebox=\box66
+\mdf@footnotebox=\box67
+\mdf@splitbox@one=\box68
+\mdf@splitbox@two=\box69
+\mdf@splitbox@save=\box70
+\mdfsplitboxwidth=\skip118
+\mdfsplitboxtotalwidth=\skip119
+\mdfsplitboxheight=\skip120
+\mdfsplitboxdepth=\skip121
+\mdfsplitboxtotalheight=\skip122
+\mdfframetitleboxwidth=\skip123
+\mdfframetitleboxtotalwidth=\skip124
+\mdfframetitleboxheight=\skip125
+\mdfframetitleboxdepth=\skip126
+\mdfframetitleboxtotalheight=\skip127
+\mdffootnoteboxwidth=\skip128
+\mdffootnoteboxtotalwidth=\skip129
+\mdffootnoteboxheight=\skip130
+\mdffootnoteboxdepth=\skip131
+\mdffootnoteboxtotalheight=\skip132
+\mdftotallinewidth=\skip133
+\mdfboundingboxwidth=\skip134
+\mdfboundingboxtotalwidth=\skip135
+\mdfboundingboxheight=\skip136
+\mdfboundingboxdepth=\skip137
+\mdfboundingboxtotalheight=\skip138
+\mdf@freevspace@length=\skip139
+\mdf@horizontalwidthofbox@length=\skip140
+\mdf@verticalmarginwhole@length=\skip141
+\mdf@horizontalspaceofbox=\skip142
+\mdfsubtitleheight=\skip143
+\mdfsubsubtitleheight=\skip144
+\c@mdfcountframes=\count334
+
+****** mdframed patching \endmdf@trivlist
+
+****** -- success******
+
+\mdf@envdepth=\count335
+\c@mdf@env@i=\count336
+\c@mdf@env@ii=\count337
+\c@mdf@zref@counter=\count338
+Package zref Info: New property: mdf@pagevalue on input line 895.
+) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.sty
+Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
+\multirow@colwidth=\skip145
+\multirow@cntb=\count339
+\multirow@dima=\skip146
+\bigstrutjot=\dimen257
 ) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2025/11/14 1.11b listings language file
-) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
-File: l3backend-pdftex.def 2026-02-18 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count326
 ) (documentation.aux
 Package babel Info: 'ngerman' activates 'german' shorthands.
-(babel)             Reported on input line 8.
+(babel)             Reported on input line 9.
 )
 \openout1 = `documentation.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-Package hyperref Info: Link coloring OFF on input line 68.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+Package hyperref Info: Link coloring OFF on input line 111.
  (documentation.out) (documentation.out)
 \@outlinefile=\write3
 \openout3 = `documentation.out'.
@@ -421,8 +565,8 @@ Package hyperref Info: Link coloring OFF on input line 68.
 * \textheight=702.78308pt
 * \oddsidemargin=-1.1381pt
 * \evensidemargin=-1.1381pt
-* \topmargin=-38.1381pt
-* \headheight=12.0pt
+* \topmargin=-40.1381pt
+* \headheight=14.0pt
 * \headsep=25.0pt
 * \topskip=11.0pt
 * \footskip=30.0pt
@@ -439,266 +583,302 @@ Package hyperref Info: Link coloring OFF on input line 68.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-\c@lstlisting=\count327
+\c@lstlisting=\count340
 (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count328
-\scratchdimen=\dimen198
-\scratchbox=\box59
-\nofMPsegments=\count329
-\nofMParguments=\count330
-\everyMPshowfont=\toks30
-\MPscratchCnt=\count331
-\MPscratchDim=\dimen199
-\MPnumerator=\count332
-\makeMPintoPDFobject=\count333
-\everyMPtoPDFconversion=\toks31
+\scratchcounter=\count341
+\scratchdimen=\dimen258
+\scratchbox=\box71
+\nofMPsegments=\count342
+\nofMParguments=\count343
+\everyMPshowfont=\toks32
+\MPscratchCnt=\count344
+\MPscratchDim=\dimen259
+\MPnumerator=\count345
+\makeMPintoPDFobject=\count346
+\everyMPtoPDFconversion=\toks33
 ) (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-LaTeX Font Info:    Trying to load font information for U+msa on input line 70.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 113.
  (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 70.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 113.
  (C:\Users\lfphs\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) (documentation.toc
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 32.
- [1
+) (documentation.toc [1
 
-{C:/Users/lfphs/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}])
+{C:/Users/lfphs/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 36.
+ [2])
 \tf@toc=\write4
 \openout4 = `documentation.toc'.
 
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[2]
-Overfull \hbox (16.15926pt too wide) in paragraph at lines 147--150
-[]\T1/cmr/bx/n/10.95 Lesen: \T1/cmtt/m/n/10.95 DobotROSNode.update_step() \T1/cmr/m/n/10.95 ruft \T1/cmtt/m/n/10.95 device.pose() \T1/cmr/m/n/10.95 auf und liest $\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 x; y; z; r; j[]; j[]; j[]; j[]\OT1/cmr/m/n/10.95 )$
+ [3]
+Overfull \hbox (12.86513pt too wide) in paragraph at lines 120--127
+\T1/cmr/m/n/10.95 nem rea-len \T1/cmr/bx/n/10.95 Do-bot Ma-gi-ci-an\T1/cmr/m/n/10.95 -Roboterarm und ei-nem \T1/cmr/bx/n/10.95 NVI-DIA Isaac Sim 5.1\T1/cmr/m/n/10.95 -Simulationsmodell.
  []
 
 
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[3]
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 176.
+Overfull \hbox (0.74512pt too wide) in paragraph at lines 141--147
+\T1/cmr/m/n/10.95 ziert Ge-lenk-zu-stän-de auf dem To-pic \T1/cmtt/m/n/10.95 /joint_states \T1/cmr/m/n/10.95 (Typ: \T1/cmtt/m/n/10.95 sensor_msgs/msg/JointState\T1/cmr/m/n/10.95 ).
+ []
 
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 176.
-
-Missing character: There is no ° in font cmr10!
-
-Overfull \hbox (19.8171pt too wide) in paragraph at lines 187--197
+Overfull \hbox (155.06151pt too wide) in paragraph at lines 184--198
  [] 
  []
 
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
 [4]
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 224.
+Overfull \hbox (116.78711pt too wide) in paragraph at lines 201--206
+[]\T1/cmr/bx/n/10.95 Treiber-Mindestanforderung von Isaac Sim 5.1: \T1/cmr/m/n/10.95 Laut der mit-ge-lie-fer-ten Da-tei \T1/cmtt/m/n/10.95 kit/driver-requirements.json
+ []
 
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 235.
+LaTeX Warning: Reference `sec:startskript' on page 5 undefined on input line 259.
 
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 235.
-
-Missing character: There is no ° in font cmr10!
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 239.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 239.
-
-Missing character: There is no ° in font cmr10!
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-Missing character: There is no ° in font cmr10!
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-Missing character: There is no ° in font cmr10!
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-Missing character: There is no ° in font cmr10!
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 246.
-
-Missing character: There is no ° in font cmr10!
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 250.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 250.
-
-Missing character: There is no ° in font cmr10!
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 283.
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+Overfull \hbox (67.65096pt too wide) in paragraph at lines 257--261
+[]\T1/cmr/m/n/10.95 Die Um-ge-bungs-va-ria-blen wer-den beim Start über \T1/cmtt/m/n/10.95 setup_ros_env.bat \T1/cmr/m/n/10.95 ge-setzt, das in \T1/cmtt/m/n/10.95 isaac-sim-dobot.bat
+ []
 
 [5]
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 302.
-
-Underfull \hbox (badness 2351) in paragraph at lines 342--344
-[]\T1/cmr/m/n/10.95 Erstellt UI-Fenster, in-itia-li-siert Zu-stands-va-ria-blen,
+Underfull \hbox (badness 10000) in paragraph at lines 340--342
+[]|\T1/cmr/m/n/10.95 Exportiert \T1/cmtt/m/n/10.95 DobotBridgeExtension \T1/cmr/m/n/10.95 als Extension-
  []
 
 
-Underfull \hbox (badness 6173) in paragraph at lines 348--350
-[]\T1/cmr/m/n/10.95 Bindet die Isaac-Sim-DC-API an die Roboter-
+Underfull \hbox (badness 6608) in paragraph at lines 343--345
+[]|\T1/cmr/m/n/10.95 Hilfsskript: Ko-piert Ex-ten-si-on in den Omniverse-
  []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 351--353
-[]\T1/cmr/m/n/10.95 Setzt Ge-lenk-win-kel über \T1/cmtt/m/n/10.95 set_dof_state \T1/cmr/m/n/10.95 und
- []
-
-
-Underfull \hbox (badness 1281) in paragraph at lines 354--356
-[]\T1/cmr/m/n/10.95 Frame-Callback: DC-Retry, Dobot-Polling, Mo-dell-
- []
-
-
-Overfull \hbox (5.89857pt too wide) in paragraph at lines 337--366
-[] 
- []
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [6]
-Overfull \hbox (19.5926pt too wide) in paragraph at lines 373--377
-\T1/cmr/m/n/10.95 Die Isaac-Sim-Dynamic-Control-API (\T1/cmtt/m/n/10.95 omni.isaac.dynamic_control\T1/cmr/m/n/10.95 ) be-nö-tigt ei-ne \T1/cmr/m/it/10.95 lau-fen-de \T1/cmr/m/n/10.95 Physik-
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 354.
+
+Overfull \hbox (3.23323pt too wide) in paragraph at lines 356--359
+\T1/cmr/m/n/10.95 Die Da-tei \T1/cmtt/m/n/10.95 extension.toml \T1/cmr/m/n/10.95 ist die \T1/cmr/bx/n/10.95 Vi-si-ten-kar-te \T1/cmr/m/n/10.95 der Ex-ten-si-on: Sie teilt dem Isaac-Sim-Extension-
  []
 
-
-Overfull \hbox (12.1294pt too wide) in paragraph at lines 373--377
-\T1/cmr/m/n/10.95 Simulation. Ein Auf-ruf von \T1/cmtt/m/n/10.95 get_articulation() \T1/cmr/m/n/10.95 vor dem Drücken von \T1/cmr/m/it/10.95 Play \T1/cmr/m/n/10.95 lie-fert \T1/cmtt/m/n/10.95 INVALID_HANDLE
- []
-
-
-Overfull \hbox (21.0852pt too wide) in paragraph at lines 380--383
-\T1/cmr/m/n/10.95 Um Log-Spam zu ver-mei-den, wird \T1/cmtt/m/n/10.95 _init_articulation() \T1/cmr/m/n/10.95 nur dann auf-ge-ru-fen, wenn \T1/cmtt/m/n/10.95 omni.timeline
- []
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 369.
 [7]
+Overfull \hbox (27.35727pt too wide) in paragraph at lines 402--407
+[]\T1/cmr/m/n/10.95 Standardmäÿig wird die Ex-ten-si-on nach \T1/cmtt/m/n/10.95 %APPDATA%\NVIDIA Corporation\Omniverse\Extensions
+ []
 
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+Underfull \hbox (badness 4859) in paragraph at lines 419--421
+[]|\T1/cmr/m/n/10.95 Mesh- und Kol-li-si-ons-geo-me-trie al-ler Ro-bo-ter-glie-der
+ []
+
+
+Underfull \hbox (badness 1810) in paragraph at lines 425--427
+[]|\T1/cmr/m/n/10.95 Sensor-Platzhalter (Er-wei-te-rungs-punkt für zu-künf-ti-ge
+ []
 
 [8]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 482.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\to' on input line 482.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 482.
+
+
+Overfull \hbox (40.8697pt too wide) in paragraph at lines 485--487
+[]\T1/cmr/m/n/10.95 Pro Fra-me ruft \T1/cmtt/m/n/10.95 DobotBridgeExtension._on_update() \T1/cmr/m/n/10.95 die Me-tho-de \T1/cmtt/m/n/10.95 DobotROSNode.update_step()
+ []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 500.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\to' on input line 500.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 500.
+
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 532.
+[9] [10]
+Package mdframed Info: Not enough space on this page on input line 707.
+ [11]
+Package mdframed Info: Not enough space on this page on input line 707.
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 485.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 741.
 
-Underfull \hbox (badness 10000) in paragraph at lines 493--495
-[]\T1/cmr/m/n/10.95 Standard-USD-Pfad der Artikulations-Root
+Underfull \hbox (badness 1577) in paragraph at lines 769--773
+\T1/cmr/m/n/10.95 ziert \T1/cmtt/m/n/10.95 JointState\T1/cmr/m/n/10.95 , ruft \T1/cmtt/m/n/10.95 rclpy.spin_once(timeout=0)
  []
 
 
-Overfull \hbox (2.23672pt too wide) in paragraph at lines 488--507
-[] 
+Underfull \hbox (badness 10000) in paragraph at lines 769--773
+\T1/cmr/m/n/10.95 auf (nicht-blockierend). Gibt \T1/cmtt/m/n/10.95 (pose_dict,
  []
 
 
-Overfull \hbox (6.3146pt too wide) in paragraph at lines 529--531
-[]\T1/cmr/m/n/10.95 Isaac Sim star-ten und ei-ne Sze-ne mit dem Dobot-Magician-Modell la-den (\T1/cmtt/m/n/10.95 /World/magician\T1/cmr/m/n/10.95 ). 
+Underfull \hbox (badness 2096) in paragraph at lines 769--773
+\T1/cmtt/m/n/10.95 joints_deg_list) \T1/cmr/m/n/10.95 zu-rück. Bei Feh-ler: Fall-back auf
  []
 
 
-Overfull \hbox (38.32127pt too wide) in paragraph at lines 552--555
-[]\T1/cmr/m/n/10.95 Die Sauger-Methoden in py-do-bot va-ri-ie-ren zwi-schen Ver-sio-nen; die Fallback-Liste in \T1/cmtt/m/n/10.95 set_suction()
+Underfull \hbox (badness 10000) in paragraph at lines 775--778
+[]|\T1/cmr/m/n/10.95 Schaltet Va-ku-um-grei-fer SW1 (Kom-man-do
  []
 
 
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+Underfull \hbox (badness 10000) in paragraph at lines 775--778
+\T1/cmr/m/n/10.95 ID62). Fallback-Liste über meh-re-re pydobot-
+ []
 
-[9]
 
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+Underfull \hbox (badness 7168) in paragraph at lines 775--778
+\T1/cmr/m/n/10.95 Methodennamen (\T1/cmtt/m/n/10.95 suck\T1/cmr/m/n/10.95 , \T1/cmtt/m/n/10.95 set_end_effector_suction\T1/cmr/m/n/10.95 ,
+ []
 
-[10] (documentation.aux)
+
+Underfull \hbox (badness 10000) in paragraph at lines 792--794
+[]|\T1/cmr/m/n/10.95 Einfache Sequenz-Wiedergabe oh-ne Sicherheits-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 796--799
+[]|\T1/cmr/m/n/10.95 Leert Dobot-interne Queue via
+ []
+
+[12]
+Overfull \hbox (0.41057pt too wide) in paragraph at lines 809--812
+[] []\T1/cmr/bx/n/10.95 Kom-mu-ni-ka-ti-ons-un-ter-bre-chung:[] \T1/cmtt/m/n/10.95 update_step() \T1/cmr/m/n/10.95 fängt al-le Aus-nah-men auf. Bei Feh-ler wer-
+ []
+
+[13] [14]
+Overfull \hbox (11.4096pt too wide) in paragraph at lines 957--961
+[]\T1/cmtt/m/n/10.95 set_dof_position_target() \T1/cmr/m/n/10.95 er-zwingt $\OT1/cmr/m/n/10.95 [\OMS/cmsy/m/n/10.95 ^^@\OT1/cmr/m/n/10.95 2\OML/cmm/m/it/10.95 ^^Y;  \OT1/cmr/m/n/10.95 2\OML/cmm/m/it/10.95 ^^Y\OT1/cmr/m/n/10.95 ]$\T1/cmr/m/n/10.95 : \T1/cmtt/m/n/10.95 PxArticulationJoint::setDriveTarget()
+ []
+
+
+Package mdframed Warning: You got a bad break
+(mdframed)                because the last box will be empty
+(mdframed)                you have to change it manually
+(mdframed)                by changing the text, the space
+(mdframed)                or something else on input line 961.
+
+[15]
+Overfull \hbox (11.98291pt too wide) in paragraph at lines 965--969
+\T1/cmr/m/n/10.95 Die \T1/cmtt/m/n/10.95 ArticulationRootAPI \T1/cmr/m/n/10.95 liegt beim im-por-tier-ten Dobot-Modell auf \T1/cmtt/m/n/10.95 /World/magician/base_link
+ []
+
+
+Overfull \hbox (29.03876pt too wide) in paragraph at lines 991--995
+\T1/cmr/m/n/10.95 Weg-punkt mit dem neu-en Zu-stand (\T1/cmtt/m/n/10.95 _on_rec_suction_toggle_clicked()\T1/cmr/m/n/10.95 ).
+ []
+
+
+Overfull \hbox (4.41325pt too wide) in paragraph at lines 1003--1006
+\T1/cmr/m/n/10.95 Die Wie-der-ga-be läuft in ei-nem de-di-zier-ten \T1/cmtt/m/n/10.95 threading.Thread \T1/cmr/m/n/10.95 (\T1/cmtt/m/n/10.95 daemon=True\T1/cmr/m/n/10.95 , Na-me: \T1/cmtt/m/n/10.95 dobot_play\T1/cmr/m/n/10.95 ). 
+ []
+
+[16]
+Overfull \hbox (50.99487pt too wide) in paragraph at lines 1058--1062
+\T1/cmtt/m/n/10.95 _on_stop_sequence_clicked() \T1/cmr/m/n/10.95 setzt \T1/cmtt/m/n/10.95 _stop_play_flag = True \T1/cmr/m/n/10.95 und ruft \T1/cmtt/m/n/10.95 DobotROSNode.stop_sequence()
+ []
+
+[17]
+Overfull \hbox (10.44489pt too wide) in paragraph at lines 1159--1162
+   [] \T1/cmr/m/n/10.95 Dock-Task can-celn (ver-hin-dert ``ex-ten-si-on ob-ject is still alive''-Warnung),
+ []
+
+[18]
+Underfull \hbox (badness 10000) in paragraph at lines 1226--1228
+[]|\T1/cmr/m/n/10.95 Installiert \T1/cmtt/m/n/10.95 pydobot \T1/cmr/m/n/10.95 und \T1/cmtt/m/n/10.95 pyserial \T1/cmr/m/n/10.95 via
+ []
+
+
+Underfull \hbox (badness 1603) in paragraph at lines 1231--1233
+[]|\T1/cmr/m/n/10.95 Servo-Winkel er-hö-hen / ver-rin-gern; Winkel-
+ []
+
+[19]
+Underfull \hbox (badness 8000) in paragraph at lines 1250--1253
+[]|\T1/cmr/m/n/10.95 Virtueller Sauger-Toggle für Auf-zeich-nung;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1278--1280
+[]|\T1/cmr/m/n/10.95 Kartesische Po-si-ti-on: \T1/cmtt/m/n/10.95 Pose: x=... y=... z=...
+ []
+
+[20]
+Underfull \hbox (badness 10000) in paragraph at lines 1296--1298
+[]|\T1/cmr/m/n/10.95 UI-Callbacks, Frame-Updates
+ []
+
+
+Overfull \hbox (17.78079pt too wide) in paragraph at lines 1313--1315
+[] []\T1/cmr/bx/n/10.95 Gra-ce-ful Shut-down:[] \T1/cmr/m/n/10.95 Bei-de Stop-Flags wer-den in \T1/cmtt/m/n/10.95 _cleanup() \T1/cmr/m/n/10.95 ge-setzt; da-nach \T1/cmtt/m/n/10.95 join(timeout=1s)
+ []
+
+[21]
+Overfull \hbox (3.69376pt too wide) in paragraph at lines 1353--1358
+\T1/cmtt/m/n/10.95 rclpy.spin_once(timeout_sec=0.0) \T1/cmr/m/n/10.95 am En-de von \T1/cmtt/m/n/10.95 update_step() \T1/cmr/m/n/10.95 ver-ar-bei-tet ein-ge-hen-de Nach-
+ []
+
+
+LaTeX Warning: Command \textdegree invalid in math mode on input line 1397.
+
+
+LaTeX Warning: Command \textdegree invalid in math mode on input line 1397.
+
+Missing character: There is no ° in font cmr10!
+
+LaTeX Warning: Command \textdegree invalid in math mode on input line 1398.
+
+
+LaTeX Warning: Command \textdegree invalid in math mode on input line 1398.
+
+Missing character: There is no ° in font cmr10!
+[22]
+Overfull \hbox (94.39441pt too wide) in paragraph at lines 1466--1470
+[]\T1/cmr/bx/n/10.95 Isaac Sim star-ten: \T1/cmtt/m/n/10.95 C:\NVIDIA_Isaac_Sim\isaac-sim-dobot.bat \T1/cmr/m/n/10.95 auf-ru-fen (setzt \T1/cmtt/m/n/10.95 OMNI_KIT_EXTENSION_PATH
+ []
+
+[23] [24] (documentation.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-03-20>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
 Package rerunfilecheck Info: File `documentation.out' has not changed.
-(rerunfilecheck)             Checksum: 5F994ABF15BBBF8CBAFDACC71CFDE5B4;5310.
+(rerunfilecheck)             Checksum: 85F7B23839F74FBE974DAB12A5C3C5EF;15831.
  ) 
 Here is how much of TeX's memory you used:
- 15183 strings out of 467691
- 233602 string characters out of 5414987
- 960337 words of memory out of 5000000
- 43930 multiletter control sequences out of 15000+600000
- 644985 words of font info for 82 fonts, out of 8000000 for 9000
+ 16837 strings out of 467691
+ 264077 string characters out of 5414987
+ 1145459 words of memory out of 5000000
+ 45270 multiletter control sequences out of 15000+600000
+ 645984 words of font info for 84 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,391b,2096s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1440.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1200.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecit1000.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on documentation.pdf (10 pages, 312667 bytes).
+ 76i,12n,79p,539b,2214s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tctt1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbi1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1440.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecit1000.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1200.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\lfphs\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/lfphs/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on documentation.pdf (24 pages, 508188 bytes).
 PDF statistics:
- 962 PDF objects out of 1000 (max. 8388607)
- 119 named destinations out of 1000 (max. 500000)
- 265 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1725 PDF objects out of 1728 (max. 8388607)
+ 389 named destinations out of 1000 (max. 500000)
+ 681 words of extra memory for PDF output out of 10000 (max. 10000000)
 
