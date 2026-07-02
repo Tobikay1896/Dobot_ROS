@@ -1,4 +1,4 @@
-﻿\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
@@ -142,25 +142,33 @@ senden.
         Die Extension startet intern einen ROS2-Node in Isaac Sim und
         publiziert Gelenkzustände auf dem Topic \texttt{/joint\_states}
         (Typ: \texttt{sensor\_msgs/msg/JointState}). Externe ROS2-Knoten
-        (z.\,B. MoveIt!) können dieses Topic abonnieren und die aktuelle
+        können dieses Topic abonnieren und die aktuelle
         Kinematik in Echtzeit empfangen.
-  \item \textbf{Interaktives Teach-in:}
+  \item \textbf{Pick-\&-Place (Teaching):}
         Bewegungsabläufe werden durch manuelles Verfahren des
         Roboters aufgezeichnet und anschließend vollautomatisch mit
         Sicherheitslogik wiedergegeben.
-  \item \textbf{Würfel-Tracking (Ziel-Tracking):}
-        Ein interaktiv in der Isaac-Sim-Szene verschiebbarer
-        Ziel-Würfel dient als Bewegungssollwert für den echten
-        Roboterarm.
+  \item \textbf{Würfel-Tracking:}
+        Ein interaktiv in der Szene verschiebbarer Ziel-Würfel
+        dient als Bewegungssollwert für den Roboterarm.
+        Das Tracking funktioniert auch ohne verbundenen COM-Port.
 \end{itemize}
+
+Die folgenden Abschnitte beschreiben zunächst die Systemumgebung
+(Abschnitt~\ref{sec:system}), dann Einrichtung und Installation
+(Abschnitt~\ref{sec:einrichtung}), das Robotermodell
+(Abschnitt~\ref{sec:robotermodell}), die Gesamtarchitektur
+(Abschnitt~\ref{sec:architektur}), das kinematische Modell
+(Abschnitt~\ref{sec:kinematik}) und schließlich alle
+Implementierungsdetails (Abschnitt~\ref{sec:impl}).
 
 % ===================================================================
 \section{Systemumgebung und Softwarestapel}
 \label{sec:system}
 % ===================================================================
 
-Dieser Abschnitt dokumentiert vollständig die Hardware- und
-Softwareumgebung, in der die Extension entwickelt und betrieben wird.
+Dieser Abschnitt dokumentiert die Hardware- und Softwareumgebung,
+in der die Extension entwickelt und betrieben wird.
 
 \subsection{Hardware}
 
@@ -225,8 +233,7 @@ deutlich darüber und ist vollständig kompatibel.
 Isaac Sim bringt eine \textbf{eigene, isolierte Python-3.11.13-Laufzeitumgebung}
 mit. Diese ist vollständig von einer etwaigen System-Python-Installation
 getrennt. Alle Extension-Skripte laufen in dieser gebündelten
-Python-Umgebung -- \textbf{nicht} in der System-Python-Installation
-(hier: Python 3.14.3 im Projekt-\texttt{.venv}).
+Python-Umgebung.
 \end{notebox}
 
 \subsection{ROS2-Integration in Isaac Sim}
@@ -255,34 +262,13 @@ vorkompilierte Shared Libraries bereit:
 \end{center}
 
 Die Umgebungsvariablen werden beim Start über
-\texttt{setup\_ros\_env.bat} gesetzt, das in
-\texttt{isaac-sim-dobot.bat} (Abschnitt~\ref{sec:startskript})
-eingebunden ist.
+\texttt{setup\_ros\_env.bat} gesetzt.
 
-\subsection{Pythonpakete der Projekt-Entwicklungsumgebung}
+\subsection{Virtuelle Entwicklungsumgebung und Python-Pakete}
 
-Das Projekt-\texttt{.venv} (Python 3.14.3,
-\texttt{dobot\_ros/.venv}) dient \textbf{ausschließlich}
-für Entwicklungswerkzeuge (z.\,B. LaTeX-Build-Skript) und
-enthält nur:
-
-\begin{center}
-\begin{tabular}{ll}
-  \toprule
-  Paket & Version \\
-  \midrule
-  \texttt{paho-mqtt} & 2.1.0 \\
-  \texttt{pip} & 26.1 \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-Die eigentlichen Laufzeitabhängigkeiten (\texttt{pydobot},
-\texttt{pyserial}, \texttt{rclpy}, \texttt{omni.*}) werden
-\textbf{innerhalb der Isaac-Sim-Python-Umgebung} installiert bzw.
-sind dort bereits enthalten.
-
-\subsection{Laufzeitabhängigkeiten (Isaac-Sim-Umgebung)}
+Die Extension benötigt \textbf{keine} separate lokale Python-Umgebung.
+Alle Laufzeitabhängigkeiten laufen ausschließlich innerhalb der
+eingebetteten Python-Umgebung von Isaac Sim (\texttt{python.bat}).
 
 \begin{center}
 \begin{tabular}{lll}
@@ -322,19 +308,23 @@ sind dort bereits enthalten.
 \end{center}
 
 % ===================================================================
-\section{Datei- und Paketstruktur}
-\label{sec:dateien}
+\section{Einrichtung und Installation}
+\label{sec:einrichtung}
 % ===================================================================
 
-\subsection{Quellcode-Dateien}
+Dieser Abschnitt beschreibt den Aufbau des Projekts, erklärt wie
+Isaac Sim die Extension lädt, und zeigt die nötigen Schritte zur
+Erstinstallation.
+
+\subsection{Projektdateien}
 
 \begin{center}
 \begin{tabular}{lp{9.5cm}}
   \toprule
   Datei & Beschreibung \\
   \midrule
-  \texttt{extension.py}       & Hauptlogik (1\,536 Zeilen): ROS-Node, Kinematik,
-                                DC-Kopplung, UI, Teach-in, Würfel-Tracking \\
+  \texttt{extension.py}       & Hauptlogik: ROS-Node, Kinematik,
+                                DC-Kopplung, UI, Pick-\&-Place, Würfel-Tracking \\
   \texttt{constants.py}       & Zentrale Farbwerte, USD-Pfad des Roboters,
                                 Nullposition, Servo-Konfiguration \\
   \texttt{\_\_init\_\_.py}    & Exportiert \texttt{DobotBridgeExtension}
@@ -345,7 +335,6 @@ sind dort bereits enthalten.
   \texttt{set\_extension\_path.ps1} & PowerShell-Skript: Setzt
                                 \texttt{OMNI\_KIT\_EXTENSION\_PATH} \\
   \texttt{build\_docs.py}     & Erstellt \texttt{documentation.pdf} aus LaTeX \\
-  \texttt{build\_docs.bat}    & Windows-Batch-Wrapper für \texttt{build\_docs.py} \\
   \texttt{documentation.tex}  & Diese Dokumentation (LaTeX-Quelle) \\
   \bottomrule
 \end{tabular}
@@ -382,61 +371,200 @@ name = "dobot_ros"
 path = "."
 \end{lstlisting}
 
-Das Modul \texttt{dobot\_ros} wird aus dem Extension-Stammverzeichnis
-geladen; \texttt{\_\_init\_\_.py} exportiert \texttt{DobotBridgeExtension},
-die von Isaac Sim als \texttt{omni.ext.IExt}-Implementierung erkannt wird.
+Der Eintrag \texttt{[[python.module]]} teilt Isaac Sim mit, welches
+Python-Modul geladen werden soll und wo es liegt.
+Beim Aktivieren der Extension importiert Isaac Sim das Modul
+\texttt{dobot\_ros} aus dem Verzeichnis \texttt{.} (dem
+Extension-Stammordner selbst). Python lädt dabei zuerst
+\texttt{\_\_init\_\_.py}, die nur eine einzige Zeile enthält:
+
+\begin{lstlisting}
+from .extension import DobotBridgeExtension
+\end{lstlisting}
+
+Damit steht \texttt{DobotBridgeExtension} im Namespace des Moduls
+zur Verfügung. Isaac Sim durchsucht den Namespace automatisch nach
+einer Klasse, die \texttt{omni.ext.IExt} implementiert, und findet
+\texttt{DobotBridgeExtension}. Anschließend ruft das Kit-Framework
+\textbf{zwei Lifecycle-Methoden} auf:
+
+\begin{description}[leftmargin=5cm, style=nextline]
+  \item[\texttt{on\_startup(ext\_id)}]
+    Wird aufgerufen, sobald die Extension aktiviert wird
+    (Häkchen im Extension-Manager oder Autostart).
+    Hier werden Zustandsvariablen initialisiert, das UI-Fenster
+    gebaut und der Frame-Update-Callback registriert.
+  \item[\texttt{on\_shutdown()}]
+    Wird aufgerufen, wenn die Extension deaktiviert oder Isaac Sim
+    beendet wird. Trennt die Dobot-Verbindung, stoppt alle
+    Hintergrundthreads und gibt UI-Ressourcen frei.
+\end{description}
+
+Solange die Extension nicht korrekt als \texttt{omni.ext.IExt}
+erkannt wird --- etwa weil \texttt{extension.toml} den falschen
+Modulnamen oder Pfad enthält --- werden weder \texttt{on\_startup}
+noch \texttt{on\_shutdown} jemals aufgerufen, und die Extension
+erscheint im Manager als nicht ladbar.
 
 \subsection{Installations-Hilfsskript (\texttt{install\_extension.py})}
 
-\begin{lstlisting}[caption={install\_extension.py -- Verwendung}]
-# Standard-Installation in Omniverse-Roaming-Verzeichnis:
+\paragraph{Wozu dient das Skript?}
+
+Isaac Sim kennt zwei Wege, eine Extension zu finden:
+
+\begin{enumerate}
+  \item \textbf{Suchpfad im Extension-Manager} (Entwicklung):
+        Im Extension-Manager unter
+        \textit{Fenster $\to$ Extensions $\to$ Zahnrad $\to$ Paths}
+        kann der Quellordner direkt eingetragen werden.
+
+  \item \textbf{Roaming-Extensions-Verzeichnis} (Installation):
+        Isaac Sim durchsucht beim Start automatisch
+        \texttt{\%APPDATA\%\textbackslash{}NVIDIA Corporation\textbackslash{}Omniverse\textbackslash{}Extensions}.
+        Wer die Extension dauerhaft ohne manuellen Pfadeintrag
+        betreiben oder auf einem Produktionsrechner einsetzen möchte,
+        kopiert den Ordner dorthin. Genau das erledigt
+        \texttt{install\_extension.py}.
+\end{enumerate}
+
+\paragraph{Wann wird das Skript benötigt?}
+
+\begin{itemize}
+  \item Deployment auf einem Rechner ohne Entwicklungsumgebung
+  \item Saubere Installation ohne Git-Artefakte und Cache-Dateien
+  \item Schnelle Ersteinrichtung auf einem neuen System
+\end{itemize}
+
+\paragraph{Verwendung}
+
+\begin{lstlisting}[style=batch, caption={install\_extension.py -- Verwendung}]
+# Standard-Installation in das Omniverse-Roaming-Verzeichnis:
 python install_extension.py
 
-# Benutzerdefiniertes Zielverzeichnis:
+# Eigenes Zielverzeichnis und Ordnername:
 python install_extension.py --dest "C:\MeinPfad" --name dobot_ros
 
-# Vorschau ohne Dateikopie:
+# Vorschau: zeigt Quelle und Ziel, kopiert aber nichts:
 python install_extension.py --dry-run
 \end{lstlisting}
 
-Standardmäßig wird die Extension nach
-\texttt{\%APPDATA\%\textbackslash{}NVIDIA Corporation\textbackslash{}Omniverse\textbackslash{}Extensions}
-kopiert. Aus dem Quellbaum werden ausgeschlossen:
-\texttt{.venv}, \texttt{.git}, \texttt{\_\_pycache\_\_},
-\texttt{*.pyc/pyo/pyd}, kompilierte LaTeX-Artefakte.
+\subsection{Erstinstallation}
 
-\subsection{USD- und Robotermodell-Dateien}
+\begin{enumerate}
+  \item \textbf{Extension-Pfad eintragen:}
+        Im Extension-Manager unter
+        \textit{Fenster $\to$ Extensions $\to$ Zahnrad $\to$ Paths}
+        den Ordner \texttt{dobot\_ros} als Suchpfad hinzufügen.
+        Alternativ \texttt{install\_extension.py} ausführen, um
+        die Extension in das Roaming-Verzeichnis zu kopieren.
+
+  \item \textbf{Extension aktivieren:}
+        Im Extension-Manager nach \texttt{dobot\_ros} suchen
+        und aktivieren.
+
+  \item \textbf{Pakete installieren:}
+        Im Extension-Panel \textit{Install packages} klicken.
+        Dies installiert \texttt{pydobot} und \texttt{pyserial}
+        in der Isaac-Sim-Python-Umgebung via
+        \texttt{omni.kit.pipapi}.
+        Danach Extension deaktivieren und neu aktivieren.
+\end{enumerate}
+
+% ===================================================================
+\section{Robotermodell}
+\label{sec:robotermodell}
+% ===================================================================
+
+Bevor die Architektur und Implementierung der Extension beschrieben
+werden, ist ein Verständnis des Robotermodells notwendig: Ohne ein
+korrekt importiertes Modell kann die Extension nicht mit der
+Simulationsgelenkstruktur kommunizieren.
+
+\subsection{URDF-Import}
+
+URDF (\textit{Unified Robot Description Format}) ist ein XML-basiertes
+Format zur vollständigen Beschreibung eines Roboters: Körper (Links),
+Gelenke (Joints), 3D-Meshes, Trägheitsmomente und Kollisionsgeometrien.
+Isaac Sim kann URDF-Dateien direkt importieren und daraus ein
+simulierbares USD-Modell erzeugen.
+
+Ohne ein korrekt importiertes Modell gibt es in Isaac Sim keine
+Gelenkstruktur, auf die die Dynamic-Control-API zugreifen kann.
+Die Extension setzt voraus, dass das Modell als
+\textbf{Artikulation} geladen ist -- d.\,h. \texttt{base\_link}
+trägt die \texttt{ArticulationRootAPI} und alle Gelenke sind als
+DOFs (Degrees of Freedom) registriert. Nur dann liefert
+\texttt{get\_articulation()} einen gültigen Handle.
+
+\begin{description}[leftmargin=4cm, style=nextline]
+  \item[Artikulation]
+    In Isaac Sim bezeichnet \emph{Artikulation} eine zusammenhängende
+    Kette von starren Körpern, die über Gelenke verbunden sind und
+    gemeinsam von der Physik-Engine simuliert werden. Der Prim, der
+    \texttt{ArticulationRootAPI} trägt, ist der Wurzelknoten dieser
+    Kette -- alle Kindknoten mit Gelenken gehören automatisch dazu.
+    Ohne dieses Schema behandelt Isaac Sim die einzelnen Meshes als
+    unabhängige Starrkörper ohne kinematische Verbindung.
+
+  \item[DOF (Degree of Freedom)]
+    Jedes bewegliche Gelenk in der Artikulation bekommt beim Start
+    der Physik-Simulation eine interne Indexnummer -- seinen
+    \emph{DOF-Index}. Über diesen Index spricht die
+    Dynamic-Control-API das Gelenk an: Winkel lesen,
+    Sollwert setzen. \glqq Als DOF registriert\grqq{} bedeutet,
+    dass das Gelenk von der Physik-Engine erkannt wurde und
+    einen gültigen Index hat.
+
+  \item[Handle]
+    Ein \emph{Handle} ist ein numerischer Bezeichner, den
+    \texttt{get\_articulation()} zurückgibt, sobald die Physik
+    läuft und die Artikulation gefunden wurde. Er ist vergleichbar
+    mit einem Datei-Handle beim Öffnen einer Datei: Erst wenn er
+    gültig ist (\(\neq\) \texttt{INVALID\_HANDLE}), können alle
+    weiteren DC-API-Aufrufe auf den Roboter zugreifen. Deshalb
+    initialisiert die Extension die DC-Verbindung lazy -- erst
+    nach dem Drücken von \emph{Play}.
+\end{description}
+
+\subsection{Gelenkstruktur des Dobot Magician}
+
+Der Dobot Magician hat ein Parallelogrammgestänge im Inneren, das
+kinematisch dafür sorgt, dass \texttt{link\_6} (Endeffektor-Flansch)
+stets horizontal bleibt. Im URDF wird dieses Gestänge \emph{nicht}
+als eigene Links modelliert -- stattdessen bildet die Kette direkt:
 
 \begin{center}
-\begin{tabular}{lp{9.5cm}}
-  \toprule
-  Datei & Beschreibung \\
-  \midrule
-  \texttt{load\_dobot.urdf} & URDF-Roboterbeschreibung (162 Zeilen):
-                              Gelenke, Massen, Kollisionsgeometrie \\
-  \texttt{load\_dobot/load\_dobot.usd} & USD-Wurzeldatei,
-                              führt alle Konfigurationsschichten zusammen \\
-  \texttt{.../load\_dobot\_base.usd} & Mesh- und Kollisionsgeometrie
-                              aller Roboterglieder (4,2\,MB) \\
-  \texttt{.../load\_dobot\_robot.usd} & Artikulationsroot,
-                              Gelenkeigenschaften, IsaacRobotAPI-Schema \\
-  \texttt{.../load\_dobot\_physics.usd} & Physikparameter: Massen,
-                              Trägheitstensoren, Dämpfung, Steifigkeit \\
-  \texttt{.../load\_dobot\_sensor.usd} & Sensor-Platzhalter
-                              (Erweiterungspunkt für zukünftige Sensoren) \\
-  \texttt{meshes/*.STL, *.dae} & 3D-Netz-Dateien für alle Roboterglieder \\
-  \bottomrule
-\end{tabular}
+\texttt{base\_link}
+$\xrightarrow{\text{joint\_1 (Z, }\pm180^{\circ})}$
+\texttt{link\_1}
+$\xrightarrow{\text{joint\_2 (Z, 0--90}^{\circ}\text{)}}$
+\texttt{link\_2}
+$\xrightarrow{\text{joint\_5 (-Z, 0--120}^{\circ}\text{)}}$
+\texttt{link\_5}
+
+\texttt{link\_5}
+$\xrightarrow{\text{joint\_6 (-Z, }\pm180^{\circ})}$
+\texttt{link\_6}
+$\xrightarrow{\text{joint\_suction (fixed, +4\,cm)}}$
+\texttt{link\_suction}
 \end{center}
+
+\texttt{joint\_3} und \texttt{joint\_4} existieren im URDF nicht --
+das Parallelogramm ist kinematisch in die Winkelformeln von
+\texttt{joint\_5} und \texttt{joint\_6} eingerechnet
+(siehe Abschnitt~\ref{sec:kinematik}).
 
 % ===================================================================
 \section{Systemarchitektur}
 \label{sec:architektur}
 % ===================================================================
 
-\subsection{Schichtenmodell}
+Mit dem Robotermodell als Grundlage lässt sich nun die
+Gesamtarchitektur der Extension beschreiben. Diese gliedert sich in
+vier klar voneinander getrennte Schichten, die von oben (UI) bis
+unten (Hardware) aufeinander aufbauen.
 
-Die Extension ist in vier klar getrennte Schichten gegliedert:
+\subsection{Schichtenmodell}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.4}
@@ -461,25 +589,28 @@ Die Extension ist in vier klar getrennte Schichten gegliedert:
 
 \subsection{Hauptklassen}
 
+Die gesamte Logik verteilt sich auf zwei Klassen, die klar
+voneinander getrennte Verantwortlichkeiten haben:
+
 \begin{description}[leftmargin=4.5cm, style=nextline]
   \item[\texttt{DobotROSNode}]
     Kapselt die serielle USB-Verbindung zum echten Dobot-Roboter
     über \texttt{pydobot} sowie den ROS2-Node und den
     JointState-Publisher. Enthält alle Hardware-nahen Methoden:
     Pose-Abfrage, Kinematikberechnung, Bewegungsbefehle,
-    Vakuumgreifer, RC-Servo-Ansteuerung und
-    Teach-in-Sequenzsteuerung.
+    Vakuumgreifer und RC-Servo-Ansteuerung.
 
   \item[\texttt{DobotBridgeExtension}]
     Subklasse von \texttt{omni.ext.IExt}. Verwaltet das
     Omniverse-UI-Fenster mit zwei Tabs, die Isaac-Sim-Dynamic-%
     Control-Kopplung, den Frame-Update-Loop sowie die
-    Hintergrundthreads für Teach-in-Wiedergabe und Würfel-Tracking.
+    Hintergrundthreads für Pick-\&-Place-Sequenzwiedergabe
+    und Würfel-Tracking.
 \end{description}
 
 \subsection{Datenfluss}
 
-\subsubsection{Richtung 1: Echter Roboter $\to$ Simulation (Digital Twin)}
+\subsubsection{Richtung 1: Echter Roboter \texorpdfstring{$\to$}{->} Simulation (Digital Twin)}
 
 \begin{enumerate}
   \item Pro Frame ruft \texttt{DobotBridgeExtension.\_on\_update()}
@@ -487,8 +618,7 @@ Die Extension ist in vier klar getrennte Schichten gegliedert:
   \item \texttt{update\_step()} liest via
         \texttt{device.pose()} die aktuelle Pose:
         $(x, y, z, r, j_1, j_2, j_3, j_4)$ in mm und Grad.
-  \item Kinematische Transformation
-        (Abschnitt~\ref{sec:kinematik}) liefert
+  \item Kinematische Transformation liefert
         Isaac-Sim-kompatible Gelenkwinkel.
   \item Konvertierung nach Radiant; Publikation als
         \texttt{JointState} auf \texttt{/joint\_states}.
@@ -497,7 +627,7 @@ Die Extension ist in vier klar getrennte Schichten gegliedert:
   \item Status-Dashboard im UI aktualisieren.
 \end{enumerate}
 
-\subsubsection{Richtung 2: Simulation / UI $\to$ Echter Roboter}
+\subsubsection{Richtung 2: Simulation / UI \texorpdfstring{$\to$}{->} Echter Roboter}
 
 \begin{enumerate}
   \item Nutzer betätigt eine Steuertaste
@@ -511,58 +641,13 @@ Die Extension ist in vier klar getrennte Schichten gegliedert:
 \end{enumerate}
 
 % ===================================================================
-\section{Lazy-Import-System}
-\label{sec:lazyimport}
-% ===================================================================
-
-ROS2 (\texttt{rclpy}) und \texttt{pydobot} werden nicht beim
-Extension-Start importiert, sondern erst beim ersten Klick auf
-\textit{Connect}. Dieser Mechanismus verfolgt zwei Ziele:
-
-\begin{enumerate}
-  \item Die Extension lädt fehlerfrei, auch wenn ROS2 oder
-        \texttt{pydobot} noch nicht installiert sind.
-  \item Teure Import-Operationen verzögern den Isaac-Sim-Start nicht.
-\end{enumerate}
-
-Einmal erfolgreich geladene Module werden in Modul-globalen
-Variablen gecacht:
-
-\begin{lstlisting}[caption={Lazy-Import-Caches und \_try\_import\_ros()}]
-_rclpy      = None   # rclpy-Modul
-_Node       = None   # rclpy.node.Node
-_JointState = None   # sensor_msgs.msg.JointState
-_Dobot      = None   # pydobot.Dobot
-
-def _try_import_ros():
-    global _rclpy, _Node, _JointState
-    if _rclpy is not None:
-        return True        # Bereits gecacht
-    try:
-        import rclpy
-        from rclpy.node import Node
-        from sensor_msgs.msg import JointState
-    except Exception:
-        return False       # ROS2-Bridge nicht verfuegbar
-    _rclpy, _Node, _JointState = rclpy, Node, JointState
-    return True
-
-def _try_import_dobot():
-    global _Dobot
-    if _Dobot is not None:
-        return True
-    try:
-        from pydobot import Dobot
-    except Exception:
-        return False       # pydobot nicht installiert
-    _Dobot = Dobot
-    return True
-\end{lstlisting}
-
-% ===================================================================
 \section{Kinematisches Modell}
 \label{sec:kinematik}
 % ===================================================================
+
+Bevor die einzelnen Implementierungskomponenten betrachtet werden,
+ist das kinematische Modell zu verstehen, da es den Kern der
+Datenverarbeitung im Digital-Twin-Betrieb bildet.
 
 \subsection{Koordinatenkonventionen (pydobot)}
 
@@ -582,10 +667,9 @@ Dabei gilt folgende Konvention:
 \end{align}
 
 \begin{notebox}
-Durch den Parallelogramm-Mechanismus des Dobot Magician gilt
+Durch das Parallelogrammgestänge des Dobot Magician gilt
 näherungsweise $j_3 \approx 0{{}^\circ}$ (Unterarm bleibt in
-Weltkoordinaten horizontal), sofern das Seilzug- und Zahnradsystem
-korrekt eingestellt ist.
+Weltkoordinaten horizontal), sofern das Gestänge korrekt eingestellt ist.
 \end{notebox}
 
 \subsection{Isaac-Sim-Gelenkstruktur}
@@ -635,11 +719,11 @@ $\Delta_\text{Yaw} = -45{{}^\circ}$ korrigiert, um die Ausrichtung der
 Simulationsachse gegenüber dem realen Roboter auszugleichen:
 
 \begin{equation}
-  \theta_1 = j_1 + \Delta_\text{Yaw} = j_1 - 45{{}^\circ}
+  \theta_1 = j_1 + \Delta_\text{Yaw} = j_1 - 12{{}^\circ}
   \label{eq:j1}
 \end{equation}
 
-Der Wert ist als Modul-Konstante \texttt{J1\_YAW\_OFFSET\_DEG = -45.0}
+Der Wert ist als Modul-Konstante \texttt{J1\_YAW\_OFFSET\_DEG = -12.0}
 in \texttt{extension.py} festgelegt.
 
 \subsubsection{joint\_2 -- Direkte Übernahme}
@@ -721,7 +805,7 @@ if pose is not None and len(pose) >= 8:
     j1, j2, j3, j4 = pose[4], pose[5], pose[6], pose[7]
 
     # Gierwinkel-Offset: Simulationsachse gegenueber Realroboter
-    j1 = j1 + J1_YAW_OFFSET_DEG   # -45 Grad (hardcoded)
+    j1 = j1 + J1_YAW_OFFSET_DEG   # -12 Grad (kalibriert)
 
     # Parallelogramm: Unterarm in Weltlage halten
     pos_j5 = j3 - j2
@@ -738,11 +822,73 @@ if pose is not None and len(pose) >= 8:
 \end{lstlisting}
 
 % ===================================================================
-\section{Klasse \texttt{DobotROSNode}}
-\label{sec:rosnode}
+\section{Implementierung}
+\label{sec:impl}
 % ===================================================================
 
-\subsection{Initialisierung (\texttt{\_\_init\_\_})}
+Dieser Abschnitt beschreibt die technischen Details der Implementierung:
+wie Module geladen werden, wie die beiden Hauptklassen intern aufgebaut
+sind, wie die Dynamic-Control-Kopplung funktioniert und wie das
+Threading-Modell aufgebaut ist.
+
+% -------------------------------------------------------------------
+\subsection{Lazy-Import-System}
+\label{sec:lazyimport}
+% -------------------------------------------------------------------
+
+ROS2 (\texttt{rclpy}) und \texttt{pydobot} werden nicht beim
+Extension-Start importiert, sondern erst beim ersten Klick auf
+\textit{Connect}. Dieser Mechanismus verfolgt zwei Ziele:
+
+\begin{enumerate}
+  \item Die Extension lädt fehlerfrei, auch wenn ROS2 oder
+        \texttt{pydobot} noch nicht installiert sind.
+  \item Teure Import-Operationen verzögern den Isaac-Sim-Start nicht.
+\end{enumerate}
+
+Einmal erfolgreich geladene Module werden in Modul-globalen
+Variablen gecacht:
+
+\begin{lstlisting}[caption={Lazy-Import-Caches und \_try\_import\_ros()}]
+_rclpy      = None   # rclpy-Modul
+_Node       = None   # rclpy.node.Node
+_JointState = None   # sensor_msgs.msg.JointState
+_Dobot      = None   # pydobot.Dobot
+
+def _try_import_ros():
+    global _rclpy, _Node, _JointState
+    if _rclpy is not None:
+        return True        # Bereits gecacht
+    try:
+        import rclpy
+        from rclpy.node import Node
+        from sensor_msgs.msg import JointState
+    except Exception:
+        return False       # ROS2-Bridge nicht verfuegbar
+    _rclpy, _Node, _JointState = rclpy, Node, JointState
+    return True
+
+def _try_import_dobot():
+    global _Dobot
+    if _Dobot is not None:
+        return True
+    try:
+        from pydobot import Dobot
+    except Exception:
+        return False       # pydobot nicht installiert
+    _Dobot = Dobot
+    return True
+\end{lstlisting}
+
+% -------------------------------------------------------------------
+\subsection{Klasse \texttt{DobotROSNode}}
+\label{sec:rosnode}
+% -------------------------------------------------------------------
+
+\texttt{DobotROSNode} ist die Hardware-Schicht der Extension.
+Sie kapselt die serielle Verbindung zum Dobot und den ROS2-Node.
+
+\subsubsection{Initialisierung (\texttt{\_\_init\_\_})}
 
 Der Konstruktor führt in dieser Reihenfolge aus:
 \begin{enumerate}
@@ -758,7 +904,7 @@ Der Konstruktor führt in dieser Reihenfolge aus:
         \texttt{last\_valid\_positions = [0.0, 0.0, 0.0, 0.0]}.
 \end{enumerate}
 
-\subsection{Methoden-Referenz}
+\subsubsection{Methoden-Referenz}
 
 \begin{longtable}{lp{9.5cm}}
   \toprule
@@ -787,11 +933,10 @@ Der Konstruktor führt in dieser Reihenfolge aus:
   \texttt{set\_servo\_gp3(angle\_deg)} &
     RC-Servo an GP3-PWM1 via Dobot-Rohprotokoll
     (Kommandos ID\,130 + ID\,132). Winkel $[0{{}^\circ},180{{}^\circ}]$,
-    linearer Duty-Cycle. Details: Abschnitt~\ref{sec:servo}. \\[4pt]
+    linearer Duty-Cycle. \\[4pt]
   \texttt{play\_sequence(poses)} &
     Einfache Sequenz-Wiedergabe ohne Sicherheits-Anfahrt
-    (interne Fallback-Methode; im Betrieb durch
-    \texttt{\_play\_sequence\_thread} übernommen). \\[4pt]
+    (interne Fallback-Methode). \\[4pt]
   \texttt{stop\_sequence()} &
     Leert Dobot-interne Queue via
     \texttt{\_set\_queued\_cmd\_stop\_exec},
@@ -803,7 +948,7 @@ Der Konstruktor führt in dieser Reihenfolge aus:
   \bottomrule
 \end{longtable}
 
-\subsection{Fehlerbehandlung und Robustheit}
+\subsubsection{Fehlerbehandlung und Robustheit}
 
 \paragraph{Kommunikationsunterbrechung:}
 \texttt{update\_step()} fängt alle Ausnahmen auf. Bei Fehler werden
@@ -823,91 +968,20 @@ for name, args in [
 raise RuntimeError('Keine Saugbefehl-Methode in pydobot gefunden.')
 \end{lstlisting}
 
-% ===================================================================
-\section{Servo-GP3-Ansteuerung}
-\label{sec:servo}
-% ===================================================================
-
-\subsection{Hardware-Hintergrund}
-
-Der Dobot Magician bietet einen GP3-Port (General Purpose Port 3)
-mit einem PWM-fähigen Steuerausgang \texttt{PWM1} (IO-Adresse 15,
-alternativ PWM2 = Adresse 16). Über diesen lässt sich ein Standard-RC-Servo
-(Trägerfrequenz 50\,Hz, Pulsbreite 1--2\,ms) ansteuern.
-
-\subsection{Duty-Cycle-Berechnung}
-
-Der Duty-Cycle wird linear zwischen
-$D_{\min} = 0{,}05$ (1\,ms-Puls, entspricht 0°) und
-$D_{\max} = 0{,}10$ (2\,ms-Puls, entspricht 180°) interpoliert:
-
-\begin{equation}
-  D(\alpha) = D_{\min} + \frac{\alpha}{180{{}^\circ}} \cdot
-              (D_{\max} - D_{\min}), \quad
-  \alpha \in [0{{}^\circ},\, 180{{}^\circ}]
-  \label{eq:duty}
-\end{equation}
-
-\subsection{Protokoll-Implementierung}
-
-Da \texttt{pydobot} keine High-Level-API für GP3-PWM bereitstellt,
-werden zwei Dobot-Rohprotokoll-Kommandos direkt gesendet:
-
-\begin{lstlisting}[caption={set\_servo\_gp3() -- Rohprotokoll}]
-angle_deg = max(0.0, min(180.0, float(angle_deg)))
-duty = SERVO_MIN_DUTY + (angle_deg / 180.0) * \
-       (SERVO_MAX_DUTY - SERVO_MIN_DUTY)
-
-# Kommando 130: Pin 15 auf PWM-Modus (Multiplex-Typ 2)
-mux = _Msg()
-mux.id   = 130
-mux.ctrl = 0x03    # Schreiben + in Queue
-mux.params = bytearray()
-mux.params.extend(struct.pack('B', GP3_PWM_ADDRESS))  # 15
-mux.params.extend(struct.pack('B', 2))                # Typ: PWM
-self.device._send_command(mux)
-
-# Kommando 132: Frequenz und Duty-Cycle setzen
-pwm = _Msg()
-pwm.id   = 132
-pwm.ctrl = 0x03
-pwm.params = bytearray()
-pwm.params.extend(struct.pack('B', GP3_PWM_ADDRESS))
-pwm.params.extend(struct.pack('f', SERVO_FREQ_HZ))   # 50.0 Hz
-pwm.params.extend(struct.pack('f', duty))
-self.device._send_command(pwm)
-\end{lstlisting}
-
-\subsection{J1-Weltwinkel-Kompensation}
-\label{sec:j1kompensation}
-
-Beim Setzen des Servo-Winkels wird der \emph{Weltwinkel} gespeichert:
-\begin{equation}
-  \alpha_{\text{Welt}} = \alpha_{\text{Servo}} + j_1
-\end{equation}
-
-Bei jeder Fahrt in der Teach-in-Wiedergabe (\texttt{\_servo\_j1\_compensate()})
-wird der Servo-Winkel rückgerechnet:
-\begin{equation}
-  \alpha_{\text{Servo,neu}} = \max\bigl(0{{}^\circ},\,
-    \min(180{{}^\circ},\, \alpha_{\text{Welt}} - j_{1,\text{aktuell}})\bigr)
-\end{equation}
-
-Damit bleibt die Raumorientierung eines gehaltenen Objekts bei
-wechselnder Basisrotation konstant.
-
-% ===================================================================
-\section{Dynamic-Control-Kopplung}
+% -------------------------------------------------------------------
+\subsection{Dynamic-Control-Kopplung}
 \label{sec:dc}
-% ===================================================================
+% -------------------------------------------------------------------
 
-\subsection{Initialisierungsproblem}
+Die Dynamic-Control-API verbindet die kinematischen Werte aus
+\texttt{DobotROSNode} mit der Gelenkstruktur in der Simulation.
 
+\paragraph{Initialisierungsproblem:}
 Die Isaac-Sim-Dynamic-Control-API benötigt eine \emph{laufende}
 Physik-Simulation. Vor dem Drücken von \emph{Play} liefert
 \texttt{get\_articulation()} \texttt{INVALID\_HANDLE}.
 
-\subsection{Lazy-Initialisierung}
+\paragraph{Lazy-Initialisierung:}
 
 \begin{lstlisting}[caption={Lazy DC-Init in \_on\_update()}]
 if self._art_init_pending and self._dc is None:
@@ -920,7 +994,7 @@ if self._art_init_pending and self._dc is None:
             self._art_init_pending = False
 \end{lstlisting}
 
-\subsection{DOF-Handles abrufen}
+\paragraph{DOF-Handles abrufen:}
 
 \begin{lstlisting}[caption={DOF-Handle-Abruf in \_init\_articulation()}]
 joint_names = ['joint_1', 'joint_2', 'joint_5', 'joint_6']
@@ -933,7 +1007,7 @@ found = sum(1 for d in self._dof_handles if d is not None)
 # Status: "Modell verbunden: 4/4 DOFs gefunden."
 \end{lstlisting}
 
-\subsection{Gelenkwinkel setzen -- \texttt{\_drive\_joints()}}
+\paragraph{Gelenkwinkel setzen -- \texttt{\_drive\_joints()}:}
 
 Pro Gelenk werden zwei komplementäre DC-Aufrufe verwendet:
 
@@ -954,191 +1028,27 @@ for dof_handle, angle_deg in zip(self._dof_handles, joints_deg):
 \end{lstlisting}
 
 \begin{warnbox}
-\texttt{set\_dof\_position\_target()} erzwingt $[-2\pi,\, 2\pi]$:
-\texttt{PxArticulationJoint::setDriveTarget() only supports target
-angle in range [-2Pi, 2Pi]}. Die Kinematik-Formeln halten alle
-Ausgaben innerhalb dieses Bereichs.
+\texttt{set\_dof\_position\_target()} erzwingt $[-2\pi,\, 2\pi]$.
+Die Kinematik-Formeln halten alle Ausgaben innerhalb dieses Bereichs.
 \end{warnbox}
 
-\subsection{Artikulations-USD-Pfad}
-
+\begin{notebox}
 Die \texttt{ArticulationRootAPI} liegt beim importierten Dobot-Modell
 auf \texttt{/World/magician/base\_link} -- \emph{nicht} auf dem
 Elternprim \texttt{/World/magician}. Der vorausgefüllte Standardwert
 im UI ist entsprechend gesetzt.
+\end{notebox}
 
-% ===================================================================
-\section{Teach-in-System (Pick \& Place)}
-\label{sec:teachin}
-% ===================================================================
-
-\subsection{Datenstruktur der Wegpunkte}
-
-Jeder Wegpunkt ist ein 5-Tupel:
-$(x_i,\, y_i,\, z_i,\, r_i,\, s_i) \in \mathbb{R}^4 \times \{0, 1\}$
-mit $(x,y,z)$ in mm, $r$ in Grad, $s$ = Saugzustand (0 = aus, 1 = ein).
-
-\subsection{Aufzeichnung}
-
-\begin{description}[leftmargin=4.5cm, style=nextline]
-  \item[\textit{Rec Punkt}]
-    Speichert \texttt{DobotROSNode.last\_pose} + aktuellen
-    virtuellen Saugzustand als neuen Wegpunkt.
-    \emph{Kein Hardware-Befehl} -- der Saugzustand wird erst
-    bei der Wiedergabe ausgeführt.
-
-  \item[\textit{Saugen EIN/AUS}]
-    Wechselt den virtuellen Saugzustand \emph{und} speichert
-    automatisch einen Wegpunkt mit dem neuen Zustand
-    (\texttt{\_on\_rec\_suction\_toggle\_clicked()}). Ermöglicht
-    präzises Einteachen von Greif- und Ablegepositionen.
-
-  \item[\textit{Löschen}]
-    Setzt Wegpunktliste, Saugzustand und Zähler zurück.
-\end{description}
-
-\subsection{Wiedergabe-Thread}
-\label{sec:playthread}
-
-Die Wiedergabe läuft in einem dedizierten
-\texttt{threading.Thread} (\texttt{daemon=True},
-Name: \texttt{dobot\_play}).
-
-\paragraph{Begründung für Threading statt asyncio:}
-\texttt{pydobot.wait\_for\_cmd()} ist eine blockierende
-Polling-Schleife. Im asyncio-Event-Loop würde sie den gesamten
-Isaac-Sim-Hauptthread einfrieren und alle Frame-Updates blockieren.
-Im Hintergrundthread blockiert sie nur diesen Thread;
-Isaac Sim läuft ungehindert weiter. pydobots internes
-\texttt{RLock} garantiert Thread-Sicherheit der seriellen Zugriffe.
-
-\subsection{Bewegungsablauf pro Wegpunkt}
-
-\begin{lstlisting}[caption={Kernlogik \_play\_sequence\_thread() (vereinfacht)}]
-APPROACH_MM = 10.0   # 1 cm Sicherheitsabstand von oben
-
-for i, (x, y, z, r, suction_active) in enumerate(poses):
-    if self._stop_play_flag: break
-    suction_changes = (suction_active != prev_suction)
-
-    if suction_changes:
-        # 1 cm ueber Zielpunkt anfahren (kein seitliches Streifen)
-        _move_and_wait(x, y, z + APPROACH_MM, r)
-        _servo_j1_compensate()
-        _time.sleep(0.1)
-
-    # Eigentliche Zielposition anfahren
-    _move_and_wait(x, y, z, r)
-    _servo_j1_compensate()
-
-    # Saugzustand schalten (nach Positionserreichen)
-    self._ros_node.set_suction(suction_active)
-    _time.sleep(0.5)   # Druckaufbau/-abbau abwarten
-
-    if suction_changes:
-        # 1 cm sicher abheben
-        _move_and_wait(x, y, z + APPROACH_MM, r)
-        _servo_j1_compensate()
-
-    prev_suction = suction_active
-\end{lstlisting}
-
-\subsection{Rückkehr zur Nullposition}
-
-Nach dem letzten Wegpunkt oder nach Abbruch:
-\begin{enumerate}
-  \item 10\,mm über die Home-Position anfahren.
-  \item Zur eigentlichen Home-Position absenken.
-  \item Servo-Weltwinkel-Kompensation ausführen.
-  \item Sauger deaktivieren.
-\end{enumerate}
-
-\subsection{Notstopp}
-
-\texttt{\_on\_stop\_sequence\_clicked()} setzt
-\texttt{\_stop\_play\_flag = True} und ruft
-\texttt{DobotROSNode.stop\_sequence()} auf, das die interne
-Dobot-Bewegungs-Queue leert.
-
-% ===================================================================
-\section{Ziel-Würfel-Tracking}
-\label{sec:tracking}
-% ===================================================================
-
-\subsection{Würfel erstellen (\texttt{\_spawn\_target\_cube()})}
-
-\begin{enumerate}
-  \item Alten Würfel entfernen (Idempotenz).
-  \item Startposition aus \texttt{DobotROSNode.last\_pose}
-        (mm $\to$ m: Division durch 1000).
-  \item \texttt{UsdGeom.Cube}, Kantenlänge 2,5\,cm,
-        unter \texttt{/World/DobotTargetCube}.
-  \item Orangenes \texttt{UsdPreviewSurface}-Material
-        (diffuse RGB $(1.0, 0.45, 0.0)$, Opacity 0,9)
-        unter \texttt{/World/DobotTargetCubeMat}.
-  \item Tracking-Thread starten.
-\end{enumerate}
-
-\subsection{Tracking-Schleife (\texttt{\_tracking\_loop\_thread()})}
-
-\begin{lstlisting}[caption={Tracking-Thread-Kernlogik}]
-while not self._stop_tracking_flag and self._ros_node:
-    pos = self._get_cube_world_position()  # m (USD-Stage)
-    if pos is not None:
-        x = pos[0] * 1000.0    # m -> mm
-        y = pos[1] * 1000.0
-        z = pos[2] * 1000.0
-        r = self._ros_node.last_pose.get('r', 0.0)
-        move_fn(x, y, z, r)   # Bewegungsbefehl an Dobot
-    _time.sleep(1.0 / max(0.1, self._tracking_rate_hz))
-\end{lstlisting}
-
-Die Weltposition wird via
-\texttt{UsdGeom.Xformable.ComputeLocalToWorldTransform()} exakt
-ausgelesen (inkl. Elterntransformationen).
-Tracking-Frequenz: 0,5--10,0\,Hz, einstellbar per Slider.
-
-\subsection{Würfel entfernen (\texttt{\_despawn\_target\_cube()})}
-
-Stop-Flag setzen → Thread mit \texttt{join(timeout=1\,s)} abwarten →
-USD-Prims aus Stage entfernen → UI zurücksetzen.
-
-% ===================================================================
-\section{Klasse \texttt{DobotBridgeExtension}}
+% -------------------------------------------------------------------
+\subsection{Klasse \texttt{DobotBridgeExtension}}
 \label{sec:extension}
-% ===================================================================
+% -------------------------------------------------------------------
 
-\subsection{Zustandsvariablen}
+\texttt{DobotBridgeExtension} ist die oberste Schicht der Extension.
+Sie verbindet UI, Simulation und die Hardware-Klasse
+\texttt{DobotROSNode} und verwaltet alle Hintergrundthreads.
 
-\begin{center}
-\begin{tabular}{lp{9.5cm}}
-  \toprule
-  Variable & Bedeutung \\
-  \midrule
-  \texttt{\_ros\_node} & Aktive \texttt{DobotROSNode}-Instanz (oder \texttt{None}) \\
-  \texttt{\_update\_sub} & Update-Event-Subscription (automatisch gefeuert) \\
-  \texttt{\_suction\_active} & Aktueller Sauger-Status \\
-  \texttt{\_servo\_angle} & Aktueller Servo-Winkel in Grad (Startwert 90°) \\
-  \texttt{\_servo\_world\_angle} & Servo-Weltwinkel für J1-Kompensation \\
-  \texttt{\_recorded\_poses} & Liste aller aufgezeichneten Wegpunkte \\
-  \texttt{\_rec\_suction\_state} & Virtueller Saugzustand (nur Aufzeichnung) \\
-  \texttt{\_play\_thread} & Hintergrundthread der Sequenz-Wiedergabe \\
-  \texttt{\_stop\_play\_flag} & Abbruchsignal für Wiedergabe-Thread \\
-  \texttt{\_cube\_spawned} & Würfel aktuell in Stage \\
-  \texttt{\_tracking\_thread} & Hintergrundthread für Würfel-Tracking \\
-  \texttt{\_stop\_tracking\_flag} & Abbruchsignal für Tracking-Thread \\
-  \texttt{\_tracking\_rate\_hz} & Tracking-Sendefrequenz (Standard: 2,0\,Hz) \\
-  \texttt{\_dc} & DC-Interface nach erfolgreicher Initialisierung \\
-  \texttt{\_dc\_mod} & DC-Modul-Referenz für \texttt{DofState}-Konstruktor \\
-  \texttt{\_art\_handle} & Artikulations-Handle \\
-  \texttt{\_dof\_handles} & Liste von DOF-Handles [\texttt{j1,j2,j5,j6}] \\
-  \texttt{\_art\_init\_pending} & True nach Connect, False nach erfolgreicher DC-Init \\
-  \texttt{\_dock\_task} & Async-Docking-Task \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{Lebenszyklusmethoden}
+\subsubsection{Lebenszyklusmethoden}
 
 \begin{description}[leftmargin=4.5cm, style=nextline]
   \item[\texttt{on\_startup(ext\_id)}]
@@ -1151,17 +1061,16 @@ USD-Prims aus Stage entfernen → UI zurücksetzen.
     Zwei Frames notwendig, da Fenster erst nach erstem
     Render im Workspace-Index erscheint.
 
-  \item[\texttt{\_on\_update(event)}]
-    Frame-Callback: DC-Lazy-Init, Dobot-Polling,
-    Gelenkwinkeltransfer, Dashboard-Update.
-
   \item[\texttt{on\_shutdown()}]
-    Dock-Task canceln (verhindert ``extension object is still
-    alive''-Warnung), \texttt{\_cleanup()} aufrufen,
+    Dock-Task canceln (verhindert \glqq extension object is still
+    alive\grqq-Warnung), \texttt{\_cleanup()} aufrufen,
     Fenster zerstören.
 \end{description}
 
-\subsection{Frame-Update-Ablauf (\texttt{\_on\_update()})}
+\subsubsection{Frame-Update-Ablauf (\texttt{\_on\_update()})}
+
+Dieser Callback wird pro Frame vom Isaac-Sim-Event-System aufgerufen
+und ist der zentrale Takt der Digital-Twin-Kopplung:
 
 \begin{lstlisting}[caption={\_on\_update() -- vollständiger Ablauf}]
 def _on_update(self, event):
@@ -1190,7 +1099,7 @@ def _on_update(self, event):
     self._update_display(pose, joints)
 \end{lstlisting}
 
-\subsection{Ressourcenfreigabe (\texttt{\_cleanup()})}
+\subsubsection{Ressourcenfreigabe (\texttt{\_cleanup()})}
 
 \begin{enumerate}
   \item Stop-Flag Wiedergabe-Thread setzen;
@@ -1204,10 +1113,52 @@ def _on_update(self, event):
         (COM-Port schließen, ROS2-Node zerstören).
 \end{enumerate}
 
+% -------------------------------------------------------------------
+\subsection{Threading-Modell}
+\label{sec:threading}
+% -------------------------------------------------------------------
+
+Die Extension verwendet drei Threads, um blockierende Operationen
+vom Isaac-Sim-Hauptthread zu entkoppeln:
+
+\begin{center}
+\begin{tabular}{llp{7cm}}
+  \toprule
+  Thread & Name & Aufgabe \\
+  \midrule
+  Hauptthread & (Isaac Sim) & UI-Callbacks, Frame-Updates
+                (\texttt{\_on\_update}), DC-API-Aufrufe \\
+  Wiedergabe & \texttt{dobot\_play} & Blockierende
+                \texttt{wait\_for\_cmd()}-Schleife \\
+  Tracking & \texttt{dobot\_cube\_track} & Periodische
+                \texttt{move\_to}-Befehle für Würfel \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Begründung für Threading statt asyncio:}
+\texttt{pydobot.wait\_for\_cmd()} ist eine blockierende
+Polling-Schleife. Im asyncio-Event-Loop würde sie den gesamten
+Isaac-Sim-Hauptthread einfrieren. Im Hintergrundthread blockiert
+sie nur diesen Thread; Isaac Sim läuft ungehindert weiter.
+
+\paragraph{Thread-Sicherheit:}
+pydobots internes \texttt{RLock} serialisiert alle seriellen
+Zugriffe. Statusschreibzugriffe aus Hintergrundthreads
+(\texttt{\_set\_status()}) sind durch den GIL von CPython atomisch.
+
+\paragraph{Graceful Shutdown:}
+Beide Stop-Flags werden in \texttt{\_cleanup()} gesetzt;
+danach \texttt{join(timeout=1\,s)} pro Thread.
+
 % ===================================================================
-\section{UI-Fenster}
+\section{Benutzeroberfläche}
 \label{sec:ui}
 % ===================================================================
+
+Das UI-Fenster wird beim Start der Extension aufgebaut und
+automatisch neben dem Property-Panel gedockt. Es besteht aus
+zwei Tabs und einem dauerhaft sichtbaren Status-Dashboard.
 
 \subsection{Tab 0: Steuerung}
 
@@ -1228,11 +1179,10 @@ def _on_update(self, event):
   Suction ON/OFF & Vakuumgreifer umschalten \\
   Up / Down 10\,mm & Vertikalbewegung $\pm 10$\,mm \\
   X$\pm$ / Y$\pm$ 5\,mm & Horizontaler JOG $\pm 5$\,mm \\
-  Servo GP3 $\pm 10{{}^\circ}$ & Servo-Winkel erhöhen / verringern;
-                                   Winkel-Anzeige-Label \\
-  Würfel spawnen / entfernen & Ziel-Würfel ein-/ausblenden \\
+  Servo GP3 $\pm 10{{}^\circ}$ & Servo-Winkel erhöhen / verringern \\
+  Würfel spawnen / entfernen & Ziel-Würfel ein-/ausblenden;
+                                funktioniert auch ohne COM-Port \\
   Rate-Slider (0,5--10\,Hz) & Tracking-Frequenz konfigurieren \\
-  Rate-Label & Zeigt aktuelle Tracking-Frequenz \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -1244,8 +1194,7 @@ def _on_update(self, event):
   \toprule
   UI-Element & Funktion \\
   \midrule
-  Go Home & Roboter zur Nullposition fahren;
-             Button-Label zeigt $x$/$y$/$z$-Koordinaten \\
+  Go Home & Roboter zur Nullposition fahren \\
   Servo GP3 $\pm 10{{}^\circ}$ & Identisch zu Tab\,0 \\
   Saugen (Aufn.) EIN/AUS & Virtueller Sauger-Toggle für Aufzeichnung;
                             schaltet Zustand um \emph{und} speichert
@@ -1253,7 +1202,7 @@ def _on_update(self, event):
   Rec Punkt & Aktuellen Wegpunkt manuell aufzeichnen \\
   $n$\,Pkt. & Zähler der gespeicherten Wegpunkte \\
   Löschen & Alle Wegpunkte und Saugzustand zurücksetzen \\
-  Play & Teach-in-Sequenz im Hintergrundthread starten \\
+  Play & Pick-\&-Place-Sequenz im Hintergrundthread starten \\
   Stop & Laufende Sequenz abbrechen und Dobot-Queue leeren \\
   Scrollbare Waypoint-Liste & Zeigt alle Punkte mit Koordinaten und
                                Saugzustand; Saugpunkte in Grün \\
@@ -1284,39 +1233,191 @@ def _on_update(self, event):
 \end{center}
 
 % ===================================================================
-\section{Threading-Modell}
-\label{sec:threading}
+\section{Funktionen}
+\label{sec:funktionen}
 % ===================================================================
 
-\begin{center}
-\begin{tabular}{llp{7cm}}
-  \toprule
-  Thread & Name & Aufgabe \\
-  \midrule
-  Hauptthread & (Isaac Sim) & UI-Callbacks, Frame-Updates
-                (\texttt{\_on\_update}), DC-API-Aufrufe \\
-  Wiedergabe & \texttt{dobot\_play} & Blockierende
-                \texttt{wait\_for\_cmd()}-Schleife \\
-  Tracking & \texttt{dobot\_cube\_track} & Periodische
-                \texttt{move\_to}-Befehle für Würfel \\
-  \bottomrule
-\end{tabular}
-\end{center}
+Dieser Abschnitt beschreibt die beiden Hauptfunktionen der Extension,
+die über die einfache Fernsteuerung hinausgehen: das Pick-\&-Place-Szenario
+und das Würfel-Tracking. Abschließend folgt eine Schritt-für-Schritt-Anleitung
+für den täglichen Betrieb.
 
-\paragraph{Thread-Sicherheit:}
-pydobots internes \texttt{RLock} serialisiert alle seriellen
-Zugriffe. Statusschreibzugriffe aus Hintergrundthreads
-(\texttt{\_set\_status()}) sind durch den GIL (Global Interpreter
-Lock) von CPython atomisch.
+% -------------------------------------------------------------------
+\subsection{Pick-\&-Place-Szenario (Teaching)}
+\label{sec:teachin}
+% -------------------------------------------------------------------
 
-\paragraph{Graceful Shutdown:}
-Beide Stop-Flags werden in \texttt{\_cleanup()} gesetzt;
-danach \texttt{join(timeout=1\,s)} pro Thread.
+\subsubsection{Datenstruktur der Wegpunkte}
+
+Jeder Wegpunkt ist ein 5-Tupel:
+$(x_i,\, y_i,\, z_i,\, r_i,\, s_i) \in \mathbb{R}^4 \times \{0, 1\}$
+mit $(x,y,z)$ in mm, $r$ in Grad, $s$ = Saugzustand (0 = aus, 1 = ein).
+
+\subsubsection{Aufzeichnung}
+
+\begin{description}[leftmargin=4.5cm, style=nextline]
+  \item[\textit{Rec Punkt}]
+    Speichert \texttt{DobotROSNode.last\_pose} + aktuellen
+    virtuellen Saugzustand als neuen Wegpunkt.
+    \emph{Kein Hardware-Befehl} -- der Saugzustand wird erst
+    bei der Wiedergabe ausgeführt.
+
+  \item[\textit{Saugen EIN/AUS}]
+    Wechselt den virtuellen Saugzustand \emph{und} speichert
+    automatisch einen Wegpunkt mit dem neuen Zustand.
+    Ermöglicht präzises Einteachen von Greif- und Ablegepositionen.
+
+  \item[\textit{Löschen}]
+    Setzt Wegpunktliste, Saugzustand und Zähler zurück.
+\end{description}
+
+\subsubsection{Wiedergabe}
+
+Die Wiedergabe läuft in einem dedizierten Hintergrundthread
+(\texttt{dobot\_play}), damit die blockierende
+\texttt{wait\_for\_cmd()}-Schleife den Isaac-Sim-Hauptthread
+nicht einfriert.
+
+\begin{lstlisting}[caption={Kernlogik \_play\_sequence\_thread() (vereinfacht)}]
+APPROACH_MM = 10.0   # 1 cm Sicherheitsabstand von oben
+
+for i, (x, y, z, r, suction_active) in enumerate(poses):
+    if self._stop_play_flag: break
+    suction_changes = (suction_active != prev_suction)
+
+    if suction_changes:
+        # 1 cm ueber Zielpunkt anfahren (kein seitliches Streifen)
+        _move_and_wait(x, y, z + APPROACH_MM, r)
+
+    # Eigentliche Zielposition anfahren
+    _move_and_wait(x, y, z, r)
+
+    # Saugzustand schalten (nach Positionserreichen)
+    self._ros_node.set_suction(suction_active)
+    _time.sleep(0.5)   # Druckaufbau/-abbau abwarten
+
+    if suction_changes:
+        _move_and_wait(x, y, z + APPROACH_MM, r)
+
+    prev_suction = suction_active
+\end{lstlisting}
+
+Nach dem letzten Wegpunkt oder nach Abbruch fährt der Roboter
+automatisch zur Nullposition zurück und der Sauger wird deaktiviert.
+\texttt{\_on\_stop\_sequence\_clicked()} setzt das Stop-Flag und
+leert die interne Dobot-Bewegungs-Queue sofort.
+
+% -------------------------------------------------------------------
+\subsection{Ziel-Würfel-Tracking}
+\label{sec:tracking}
+% -------------------------------------------------------------------
+
+Der Ziel-Würfel ist ein orangenes 2,5\,cm-Objekt in der Isaac-Sim-Szene,
+das frei verschoben werden kann. Die Tracking-Funktion liest seine
+Position aus der USD-Stage und sendet entsprechende Fahrbefehle an
+den Dobot. Das Tracking funktioniert auch ohne verbundenen COM-Port --
+in diesem Fall wird die Zielposition nur angezeigt.
+
+\subsubsection{Würfel erstellen (\texttt{\_spawn\_target\_cube()})}
+
+\begin{enumerate}
+  \item Alten Würfel entfernen (Idempotenz).
+  \item Startposition aus \texttt{DobotROSNode.last\_pose}
+        (mm $\to$ m: Division durch 1000); Fallback auf
+        Home-Position wenn nicht verbunden.
+  \item \texttt{UsdGeom.Cube}, Kantenlänge 2,5\,cm,
+        unter \texttt{/World/DobotTargetCube}.
+  \item Orangenes \texttt{UsdPreviewSurface}-Material
+        (diffuse RGB $(1.0, 0.45, 0.0)$, Opacity 0,9).
+  \item Tracking-Thread starten.
+\end{enumerate}
+
+\subsubsection{Tracking-Schleife}
+
+Statt des Würfelzentrums wird der Normalenvektor von
+Würfelzentrum zu aktueller TCP-Position berechnet und der
+TCP auf die dem Roboter zugewandte Würfelfläche ausgerichtet:
+
+\begin{lstlisting}[caption={Tracking-Thread-Kernlogik}]
+CUBE_HALF_MM = 12.5   # halbe Kantenlaenge in mm
+
+while not self._stop_tracking_flag:
+    pos = self._get_cube_world_position()
+    if pos is not None:
+        cx, cy, cz = pos[0]*1000, pos[1]*1000, pos[2]*1000
+
+        node = self._ros_node
+        if node:
+            r  = node.last_pose.get('r', 0.0)
+            rx = node.last_pose.get('x', cx)
+            ry = node.last_pose.get('y', cy)
+            rz = node.last_pose.get('z', cz)
+        else:
+            r = HOME_R
+            rx, ry, rz = HOME_X, HOME_Y, HOME_Z
+
+        dx, dy, dz = rx - cx, ry - cy, rz - cz
+        dist = math.sqrt(dx*dx + dy*dy + dz*dz)
+        if dist > 1.0:
+            nx, ny, nz = dx/dist, dy/dist, dz/dist
+            tx = cx + nx * CUBE_HALF_MM
+            ty = cy + ny * CUBE_HALF_MM
+            tz = cz + nz * CUBE_HALF_MM
+        else:
+            tx, ty, tz = cx, cy, cz
+
+        device = node.device if node else None
+        move_fn = getattr(device, 'move_to', None) if device else None
+        if callable(move_fn):
+            move_fn(tx, ty, tz, r)
+
+    _time.sleep(1.0 / max(0.1, self._tracking_rate_hz))
+\end{lstlisting}
+
+Die Weltposition wird via
+\texttt{UsdGeom.Xformable.ComputeLocalToWorldTransform()} exakt
+ausgelesen (inkl. Elterntransformationen).
+Tracking-Frequenz: 0,5--10,0\,Hz, einstellbar per Slider.
+
+% -------------------------------------------------------------------
+\subsection{Betrieb Schritt für Schritt}
+\label{sec:betrieb}
+% -------------------------------------------------------------------
+
+\paragraph{Normalbetrieb (Digital Twin):}
+
+\begin{enumerate}
+  \item Szene mit Dobot-Magician-Modell laden.
+  \item \texttt{ArticulationRootAPI} auf \texttt{base\_link}
+        prüfen (\textit{Property $\to$ Physics $\to$ Articulation Root}).
+  \item COM-Port eingeben (Standard: \texttt{COM3}) und
+        \textbf{Connect} klicken.
+        Status: \textit{Verbunden -- warte auf Play\ldots}
+  \item \textbf{Play} drücken.
+        Status: \textit{Modell verbunden: 4/4 DOFs gefunden.}
+  \item Simulationsmodell folgt echtem Roboter in Echtzeit.
+\end{enumerate}
+
+\paragraph{Pick-\&-Place-Workflow (Teaching):}
+
+\begin{enumerate}
+  \item Tab \textit{Pick \& Place} wählen.
+  \item Roboter manuell in Ausgangsposition fahren (Jog-Tasten).
+  \item \textit{Rec Punkt} klicken.
+  \item An Greifpunkt: \textit{Saugen (Aufn.)} auf EIN --
+        automatisch Waypoint gespeichert.
+  \item Schritte 2--4 für alle Punkte wiederholen.
+  \item \textit{Play} starten; Sequenz läuft mit Sicherheits-Anfahrt.
+  \item \textit{Stop} bricht jederzeit ab.
+\end{enumerate}
 
 % ===================================================================
 \section{ROS2-Integration}
 \label{sec:ros2}
 % ===================================================================
+
+Die ROS2-Anbindung ermöglicht externen Knoten, die Gelenkzustände
+des Dobot in Echtzeit zu empfangen.
 
 \subsection{Node-Konfiguration}
 
@@ -1361,6 +1462,10 @@ nicht-blockierend.
 \label{sec:konstanten}
 % ===================================================================
 
+Alle magischen Zahlen und Konfigurationswerte sind in
+\texttt{constants.py} zentralisiert, damit sie an einer Stelle
+gepflegt werden können.
+
 \subsection{Farbwerte (ARGB-Hex)}
 
 \begin{center}
@@ -1394,8 +1499,8 @@ nicht-blockierend.
   \texttt{HOME\_R} & $88{,}4{{}^\circ}$ & Nullposition Wristdrehung \\
   \texttt{GP3\_PWM\_ADDRESS} & 15 & IO-Adresse PWM1 am GP3-Port \\
   \texttt{SERVO\_FREQ\_HZ} & $50{,}0$\,Hz & RC-Servo-Trägerfrequenz \\
-  \texttt{SERVO\_MIN\_DUTY} & $0{,}05$ & 1\,ms-Puls $= 0°$ \\
-  \texttt{SERVO\_MAX\_DUTY} & $0{,}10$ & 2\,ms-Puls $= 180°$ \\
+  \texttt{SERVO\_MIN\_DUTY} & $0{,}05$ & 1\,ms-Puls $= 0^{\circ}$ \\
+  \texttt{SERVO\_MAX\_DUTY} & $0{,}10$ & 2\,ms-Puls $= 180^{\circ}$ \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -1411,101 +1516,6 @@ nicht-blockierend.
   \bottomrule
 \end{tabular}
 \end{center}
-
-% ===================================================================
-\section{URDF-Robotermodell (\texttt{load\_dobot.urdf})}
-\label{sec:urdf}
-% ===================================================================
-
-Das URDF (Unified Robot Description Format) beschreibt die
-kinematische Struktur des Dobot Magician für den Isaac-Sim-Import.
-
-\subsection{Gelenkstruktur}
-
-\begin{center}
-\begin{tabular}{llll}
-  \toprule
-  Gelenk & Typ & Achse & Limits \\
-  \midrule
-  \texttt{joint\_1} & revolute & Z (Yaw) &
-    $\pm 180{{}^\circ}$, $\pm 10$\,rad/s \\
-  \texttt{joint\_2} & revolute & Y (Schulter) &
-    $0{{}^\circ}$--$90{{}^\circ}$, $\pm 10$\,rad/s \\
-  \texttt{joint\_5} & revolute & Y (Parallelogramm) &
-    $0{{}^\circ}$--$120{{}^\circ}$, $\pm 10$\,rad/s \\
-  \texttt{joint\_6} & revolute & Y (Endeffektor) &
-    $\pm 180{{}^\circ}$, $\pm 10$\,rad/s \\
-  \texttt{joint\_suction} & fixed & -- & -- \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{Körper (Links)}
-
-\begin{center}
-\begin{tabular}{ll}
-  \toprule
-  Link & Masse \\
-  \midrule
-  \texttt{base\_link} & 1{,}0\,kg \\
-  \texttt{link\_1} -- \texttt{link\_4} & je 0{,}3\,kg \\
-  \texttt{link\_5}, \texttt{link\_6} & 0{,}1\,kg \\
-  \texttt{link\_suction} & 0{,}05\,kg \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-% ===================================================================
-\section{Installation und Inbetriebnahme}
-\label{sec:installation}
-% ===================================================================
-
-\subsection{Erstinstallation}
-
-\begin{enumerate}
-  \item \textbf{Isaac Sim starten:}
-        \texttt{C:\textbackslash{}NVIDIA\_Isaac\_Sim\textbackslash{}isaac-sim-dobot.bat}
-        aufrufen (setzt \texttt{OMNI\_KIT\_EXTENSION\_PATH}
-        automatisch).
-
-  \item \textbf{Extension aktivieren:}
-        \textit{Window $\to$ Extensions}; nach
-        \texttt{dobot\_ros} suchen und aktivieren.
-
-  \item \textbf{Pakete installieren:}
-        Im Extension-Panel \textit{Install packages} klicken.
-        Dies installiert \texttt{pydobot} und \texttt{pyserial}
-        in der Isaac-Sim-Python-Umgebung via
-        \texttt{omni.kit.pipapi}.
-        Danach Extension deaktivieren und neu aktivieren.
-\end{enumerate}
-
-\subsection{Betrieb Schritt für Schritt}
-
-\begin{enumerate}
-  \item Szene mit Dobot-Magician-Modell laden.
-  \item \texttt{ArticulationRootAPI} auf \texttt{base\_link}
-        prüfen (\textit{Property $\to$ Physics $\to$ Articulation Root}).
-  \item COM-Port eingeben (Standard: \texttt{COM3}) und
-        \textbf{Connect} klicken.
-        Status: \textit{Verbunden -- warte auf Play\ldots}
-  \item \textbf{Play} drücken.
-        Status: \textit{Modell verbunden: 4/4 DOFs gefunden.}
-  \item Simulationsmodell folgt echtem Roboter in Echtzeit.
-\end{enumerate}
-
-\subsection{Teach-in-Workflow}
-
-\begin{enumerate}
-  \item Tab \textit{Pick \& Place} wählen.
-  \item Roboter manuell in Ausgangsposition fahren (Jog-Tasten).
-  \item \textit{Rec Punkt} klicken.
-  \item An Greifpunkt: \textit{Saugen (Aufn.)} auf EIN --
-        automatisch Waypoint gespeichert.
-  \item Schritte 2--4 für alle Punkte wiederholen.
-  \item \textit{Play} starten; Sequenz läuft mit Sicherheits-Anfahrt.
-  \item \textit{Stop} bricht jederzeit ab.
-\end{enumerate}
 
 % ===================================================================
 \section{Bekannte Einschränkungen}

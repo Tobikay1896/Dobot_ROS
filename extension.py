@@ -33,7 +33,7 @@ _CUBE_PRIM_PATH = "/World/DobotTargetCube"
 _CUBE_MAT_PATH  = "/World/DobotTargetCubeMat"
 
 # Gierwinkel-Offset J1: Ausrichtung der Simulationsachse gegenüber Realroboter
-J1_YAW_OFFSET_DEG = -45.0
+J1_YAW_OFFSET_DEG = -12.0
 
 
 def _try_import_ros():
@@ -442,7 +442,8 @@ class DobotBridgeExtension(omni.ext.IExt):
                         with ui.HStack(spacing=6, height=28):
                             self._btn_cube_toggle = ui.Button(
                                 "Würfel spawnen", width=128,
-                                clicked_fn=self._on_cube_toggle_clicked
+                                clicked_fn=self._on_cube_toggle_clicked,
+                                enabled=True
                             )
                             ui.Label("Rate:", width=34, style=_dim)
                             self._tracking_rate_slider = ui.FloatSlider(
@@ -458,7 +459,6 @@ class DobotBridgeExtension(omni.ext.IExt):
                                     m.get_value_as_float()
                                 )
                             )
-                            self._btn_cube_toggle.enabled = False
 
                 # Tab 1: Pick & Place
                 self._frame_tab1 = ui.Frame(visible=False)
@@ -615,7 +615,6 @@ class DobotBridgeExtension(omni.ext.IExt):
             self._btn_suction, self._btn_up, self._btn_down,
             self._btn_xp, self._btn_xn, self._btn_yp, self._btn_yn,
             self._btn_servo0_n, self._btn_servo0_p,
-            self._btn_cube_toggle,
             self._btn_home,
             self._btn_servo_n, self._btn_servo_p,
             self._btn_rec_suction,
@@ -853,7 +852,7 @@ class DobotBridgeExtension(omni.ext.IExt):
             self._set_status("move_to nicht in pydobot verfügbar.", CLR_RED)
             return
 
-        APPROACH_MM = 10.0  # Sicherheitsabstand von oben bei Saugerwechsel
+        APPROACH_MM = 100.0  # 10 cm Sicherheitsabstand: immer von oben an- und abfahren
 
         def _move_and_wait(tx, ty, tz, tr):
             """Bewegt und wartet blockierend; gibt False zurück bei Abbruch."""
@@ -889,18 +888,17 @@ class DobotBridgeExtension(omni.ext.IExt):
                 suction_changes = (suction_active != prev_suction)
                 self._set_status(
                     f"Punkt {i+1}/{total}  →  x={x:.1f}  y={y:.1f}  z={z:.1f}  "
-                    f"Saugen={'EIN' if suction_active else 'AUS'}"
-                    f"{'  ↓ Anfahrt von oben' if suction_changes else ''}",
+                    f"Saugen={'EIN' if suction_active else 'AUS'}",
                     CLR_YELLOW
                 )
 
-                if suction_changes:
-                    # 1 cm über Zielpunkt: seitliches Streifen vermeiden
-                    if not _move_and_wait(x, y, z + APPROACH_MM, r):
-                        break
-                    _servo_j1_compensate()
-                    _time.sleep(0.1)
+                # Jeden Wegpunkt immer 10 cm von oben anfahren
+                if not _move_and_wait(x, y, z + APPROACH_MM, r):
+                    break
+                _servo_j1_compensate()
+                _time.sleep(0.1)
 
+                # Zur Zielposition absenken
                 if not _move_and_wait(x, y, z, r):
                     break
                 _servo_j1_compensate()
@@ -912,7 +910,7 @@ class DobotBridgeExtension(omni.ext.IExt):
                 _time.sleep(0.5)  # Druckaufbau / -abbau abwarten
 
                 if suction_changes:
-                    # 1 cm abheben bevor nächste Horizontalbewegung
+                    # Nach Saugwechsel: 10 cm nach oben abheben
                     if not _move_and_wait(x, y, z + APPROACH_MM, r):
                         break
                     _servo_j1_compensate()
@@ -1100,9 +1098,6 @@ class DobotBridgeExtension(omni.ext.IExt):
         self._tracking_rate_label.text = f"{self._tracking_rate_hz:.1f} Hz"
 
     def _on_cube_toggle_clicked(self):
-        if not self._ros_node:
-            self._set_status("Keine Verbindung.", CLR_RED)
-            return
         if self._cube_spawned:
             self._despawn_target_cube()
         else:
@@ -1217,51 +1212,47 @@ class DobotBridgeExtension(omni.ext.IExt):
             return None
 
     def _tracking_loop_thread(self):
-        """Richtet link_6-Vorderfläche auf die dem TCP zugewandte Würfelfläche aus (1 Hz).
+        """Richtet link_6-Vorderfläche auf die dem TCP zugewandte Würfelfläche aus.
 
-        Statt des Würfelzentrums wird der Normalenvektor von Würfelzentrum → TCP
-        berechnet und der TCP auf die Würfelfläche (Zentrum + Normale * Halbkante) bewegt.
+        Läuft auch ohne COM-Port-Verbindung: Position wird dann nur angezeigt,
+        move_to wird nur aufgerufen wenn ein Device verbunden ist.
         """
-        device = self._ros_node.device if self._ros_node else None
-        if not device:
-            return
-        move_fn = getattr(device, 'move_to', None)
-        if not callable(move_fn):
-            self._set_status("move_to nicht verfügbar für Tracking.", CLR_RED)
-            return
-
         CUBE_HALF_MM = 12.5  # halbe Kantenlänge des Ziel-Würfels (0.025 m / 2 in mm)
 
-        while not self._stop_tracking_flag and self._ros_node:
+        while not self._stop_tracking_flag:
             try:
                 pos = self._get_cube_world_position()
                 if pos is not None:
-                    # Würfelzentrum in mm
                     cx = pos[0] * 1000.0
                     cy = pos[1] * 1000.0
                     cz = pos[2] * 1000.0
-                    r  = self._ros_node.last_pose.get('r', 0.0)
 
-                    # Aktuelle TCP-Position (letzte bekannte Pose)
-                    rx = self._ros_node.last_pose.get('x', cx)
-                    ry = self._ros_node.last_pose.get('y', cy)
-                    rz = self._ros_node.last_pose.get('z', cz)
+                    node = self._ros_node
+                    if node:
+                        r  = node.last_pose.get('r', 0.0)
+                        rx = node.last_pose.get('x', cx)
+                        ry = node.last_pose.get('y', cy)
+                        rz = node.last_pose.get('z', cz)
+                    else:
+                        r = HOME_R
+                        rx, ry, rz = HOME_X, HOME_Y, HOME_Z
 
-                    # Richtungsvektor Würfelzentrum → TCP, normiert
                     dx, dy, dz = rx - cx, ry - cy, rz - cz
                     dist = math.sqrt(dx*dx + dy*dy + dz*dz)
 
                     if dist > 1.0:
-                        # Ziel: Würfelfläche, die dem TCP zugewandt ist
                         nx, ny, nz = dx / dist, dy / dist, dz / dist
                         tx = cx + nx * CUBE_HALF_MM
                         ty = cy + ny * CUBE_HALF_MM
                         tz = cz + nz * CUBE_HALF_MM
                     else:
-                        # TCP bereits sehr nah am Würfel – auf Zentrum fahren
                         tx, ty, tz = cx, cy, cz
 
-                    move_fn(tx, ty, tz, r)
+                    device = node.device if node else None
+                    move_fn = getattr(device, 'move_to', None) if device else None
+                    if callable(move_fn):
+                        move_fn(tx, ty, tz, r)
+
                     self._set_status(
                         f"● Tracking  x={tx:.1f}  y={ty:.1f}  z={tz:.1f}  "
                         f"({self._tracking_rate_hz:.1f} Hz)",
